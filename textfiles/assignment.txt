@@ -1,0 +1,83 @@
+-Entities to represent movies, genres, and actors
+-CRUD operations for each entity with the standard database/sql package
+-Endpoints to retrieve movies by genre or release year
+-Functionality to associate actors with movies and vice versa
+-Basic error handling and input validation
+-SQLite --- go get github.com/mattn/go-sqlite3
+
+-Movie should have Many-to-Many relationship with Actor
+-Genre should have Many-to-Many relationship with Movie
+-id field will be the primary key for each entity and must be immutable once set
+-birthDate should be in ISO 8601 date format (YYYY-MM-DD)
+
+-Create a separate package for the repository layer with files for each entity (e.g., genre.go, movie.go, actor.go)
+-Create a separate package for the service layer with files for each entity (e.g., genre.go, movie.go, actor.go)
+
+CRUD ops:
+-Genre
+	Create new genre
+	Get all genres/specific by ID
+	Get all movies in genre.
+	Updating and removing.
+-Movie
+	Create new movie by title, release year, duration, genres, and actors.
+	Get all movies, a specific movie by ID and all by genre and release year.
+	Get all actors in a specific movie.
+	Updating and removing.
+
+-Actor
+	Create new actors with their name and birth date.
+	Get all actors, get a specific actor by ID and by name. 
+	Get all movies an actor has appeared in.
+	Updating and removing.
+
+-PATCH method for updating entities instead of PUT.
+
+-Implement HTTP handler functions for each entity (Genre, Movie, and Actor):
+POST /api/{entity}: Create a new entity
+GET /api/{entity}: Retrieve all entities
+GET /api/{entity}/{id}: Retrieve a specific entity by ID
+PATCH /api/{entity}/{id}: Partially update an existing entity
+DELETE /api/{entity}/{id}: Delete an entity
+
+GET /api/movies?genre={genreId}: Retrieve movies filtered by genre
+GET /api/movies?year={releaseYear}: Retrieve movies filtered by release year
+GET /api/movies?actor={actorId}: Retrieve movies that the actor with the given id has starred in
+GET /api/movies/{movieId}/actors: Retrieve all actors starring in a movie
+GET /api/actors?name={name}: Retrieve actors filtered by name
+
+-Create a database package or file (e.g. db.go) to manage the connection
+-Input Validation: struct field checks or a validation library like go-playground/validator to enforce rules (e.g. required fields, value formats).
+-Custom Errors: Define custom error variables (like ErrNotFound) to handle cases where requested data isn't found in the database.
+-Global Error Handling: Create a centralized error handler function to catch and handle common errors, including validation failures and not found cases.
+-Return appropriate HTTP status codes (200 OK, 201 Created, 204 No Content, 404 Not Found, etc.)
+-Provide clear, concise error messages that explain what went wrong.
+
+-Install Postman if you haven't already.
+-Create a new collection named Movie Database API.
+-Create tests for each entity (Genre, Movie, Actor) for all CRUD operations: POST, GET, PATCH, DELETE
+-Create tests for search-related GET requests, test with various query parameters.
+-For POST and PATCH requests, set up JSON request bodies with sample data.
+
+-Deleting a resource with existing relationships should not be possible.
+-Add a force query parameter to your delete handler, e.g., DELETE /api/genres/{id}?force=true
+	DELETE /api/genres/1 -> "Cannot delete genre 'Sci-Fi' because it has 30 associated movies." - 400: Bad request
+	DELETE /api/genres/1?force=true -> Response: 204 No Content
+
+-Implement pagination for GET requests that return multiple entities.
+	GET /api/movies?page=0&size=10
+
+-Implement a case-insensitive, partial match search for movies by title.
+	GET /api/movies/search?title=matrix
+
+-20 movies, 15 actors which are each in at least 1 movie (some in more), 5 genres with at least 2 actors for each movie.
+-Each movie has one or more genres and one or more actor.
+-Release years span at least two decades.
+
+-Useful links:
+	SQLite:			https://www.sqlitetutorial.net/sqlite-go/
+	Postman:		https://community.postman.com/t/postman-api-testing-tutorial-for-beginner/64511
+	Errors:			https://go.dev/blog/error-handling-and-go
+	Validator package:	https://github.com/go-playground/validator
+	Writing webapps:	https://go.dev/doc/articles/wiki/
+	Http package:		https://pkg.go.dev/net/http
