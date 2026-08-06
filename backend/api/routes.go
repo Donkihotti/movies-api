@@ -1,12 +1,14 @@
 package api
 
-import "net/http"
+import (
+	"net/http"
+)
 
-func NewRouter() *http.ServeMux {
+func NewRouter(h *Handler) *http.ServeMux {
 	
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", HomeHandler)
+	mux.HandleFunc("/", h.HomeHandler)
 
 	return mux
 }
