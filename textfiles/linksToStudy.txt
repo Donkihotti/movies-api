@@ -1,4 +1,4 @@
-  ┌────────┬────────┬───────────────┐
+  ┌───────┬────────┬───────────────┐
   │  SQL   │  HTTP  │ The C in CRUD │
   ├────────┼────────┼───────────────┤
   │ INSERT │ POST   │ Create        │
@@ -17,5 +17,6 @@ sqbolt on tutoriaali joka opettaa sql kielen kayttoa.
 https://www.sqlitetutorial.net/sqlite-foreign-key/
 Toinen linkki, tama on paikka mista voi tarkistaa sql quirks, miten kielta kaytetaan jne jne. 
 
+https://www.geeksforgeeks.org/node-js/rest-api-introduction/
 
 
