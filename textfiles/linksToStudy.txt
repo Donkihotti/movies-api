@@ -11,9 +11,11 @@
   └────────┴────────┴───────────────┘
 
 https://sqlbolt.com/
-sqbolt on tutoriaali joka opettaa sql kielen kayttoa. 18 oppituntia, pitaa kayda ensimmaisena lapi. 
+
+sqbolt on tutoriaali joka opettaa sql kielen kayttoa.  
 
 https://www.sqlitetutorial.net/sqlite-foreign-key/
 Toinen linkki, tama on paikka mista voi tarkistaa sql quirks, miten kielta kaytetaan jne jne. 
+
 
 
