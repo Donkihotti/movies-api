@@ -22,3 +22,12 @@ func(s *Service) GetMovies() ([]models.Movie, error) {
 	}
 	return movies, nil
 }
+
+func(s *Service) GetMovieByID(id int) (models.Movie, error) {
+	movie, err := s.repo.GetMovieByID(id)
+	if err != nil {
+	// return a struct because nil does not work on empty structs
+	return models.Movie{}, err
+	}
+	return movie, nil
+}
