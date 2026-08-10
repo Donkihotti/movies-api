@@ -12,3 +12,14 @@ type CreateMovieReq struct {
 	Description string `json:"description"`
 	ReleaseDate int `json:"release_date"`
 }
+
+type Actor struct {
+	ID 			int 	`json:"id"`
+	Name		string	`json:"name"`
+	BirthDate	string	`json:"birth_date"`
+}
+
+type CreateActorReq struct {
+	Name		string	`json:"name"`
+	BirthDate	string	`json:"birth_date"`
+}
