@@ -11,6 +11,9 @@ import (
 
 type Handler struct {
 	service *internal.Service
+	//Tänne piti lisätä kanssa tää et voidaan importtaa metodit oikeasta
+	//paikasta
+	actorService *internal.ActorService
 }
 
 
@@ -64,7 +67,8 @@ func (h *Handler) CreateMovie(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Error posting movie", http.StatusBadRequest)
 	return 
 	}
-	w.Header().Set("Content-type", "application-json")
+	//korjausehdotus claudelta, application-json --> application/json
+	w.Header().Set("Content-type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
 	json.NewEncoder(w).Encode(movie)
 }
@@ -91,4 +95,63 @@ func (h *Handler) MovieHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 
+//BELOW GOES ALL THE ACTOR RELATED HANDLERS
 
+
+func (h *Handler) CreateActor(w http.ResponseWriter, r *http.Request) {
+
+	var req models.CreateActorReq
+		decoder := json.NewDecoder(r.Body)
+		decoder.DisallowUnknownFields()
+
+		if err := decoder.Decode(&req); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+		}
+
+	actor, err := h.actorService.PostActor(r.Context(), req)
+		if err != nil { 
+			http.Error(w, "Error posting actor", http.StatusBadRequest)
+				return 
+		}
+	//korjausehdotus claudelta, application-json --> application/json
+	w.Header().Set("Content-type", "application/json")
+		w.WriteHeader(http.StatusAccepted)
+		json.NewEncoder(w).Encode(actor)
+}
+
+
+func (h *Handler) ActorsHandler(w http.ResponseWriter, r *http.Request) {
+
+	actors, err := h.actorService.GetActors()
+		if err != nil {
+			log.Println("Server error",err)
+				http.Error(w, "Server error", http.StatusInternalServerError)
+				return
+		}
+
+	w.WriteHeader(http.StatusAccepted)
+	json.NewEncoder(w).Encode(actors)
+}
+
+
+func (h *Handler) ActorHandler(w http.ResponseWriter, r *http.Request) {
+
+	idString := r.PathValue("id")
+			  id, err := strconv.Atoi(idString) 
+			  if err != nil {
+				  log.Printf("Invalid id: %v\n", idString)
+					  http.Error(w, "Invalid id", http.StatusBadRequest)
+					  return 
+			  }
+
+		  actor, err := h.actorService.GetActorByID(id)
+			  if err != nil {
+				  log.Println("Server error", err)
+					  http.Error(w, "Server error", http.StatusInternalServerError)
+					  return
+			  }
+
+		  w.WriteHeader(http.StatusAccepted)
+			  json.NewEncoder(w).Encode(actor)
+}

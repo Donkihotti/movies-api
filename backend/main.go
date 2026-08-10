@@ -25,6 +25,10 @@ func main() {
 	handler := api.NewHandler(service)
 	router := api.NewRouter(handler)
 
+
+	
+
+
 	log.Println("Server running at port :8080")
 	err = http.ListenAndServe(":8080", router)
 	if err != nil {

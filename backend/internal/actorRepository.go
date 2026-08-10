@@ -3,7 +3,6 @@ package internal
 import (
 	"context"
 	"database/sql"
-
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 )
 
@@ -21,7 +20,7 @@ func NewActorRepository(db *sql.DB) *ActorRepository {
 func (r *ActorRepository) GetActors() ([]models.Actor, error) {
 	var actors []models.Actor
 	rows, err := r.db.Query(
-		`
+	`
 	SELECT id, name, birth_date
 	FROM actors
 	`,
