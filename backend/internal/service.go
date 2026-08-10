@@ -2,6 +2,7 @@ package internal
 
 import (
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
+	"context"
 )
 
 type Service struct {
@@ -21,4 +22,13 @@ func(s *Service) GetMovies() ([]models.Movie, error) {
 	return nil, err
 	}
 	return movies, nil
+}
+
+func(s *Service) PostMovie(ctx context.Context, req models.CreateMovieReq) (models.Movie, error) {
+	
+	movie, err := s.repo.PostMovie(ctx, req)
+	if err != nil {
+	return nil, err
+	}
+	return movie, nil
 }

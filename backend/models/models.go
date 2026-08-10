@@ -6,3 +6,9 @@ type Movie struct {
 	Description string 	`json:"description"`
 	ReleaseDate int		`json:"release_date"`
 }
+
+type CreateMovieReq struct {
+	Title 		string `json:"title"` 
+	Description string `json:"description"`
+	ReleaseDate string `json:"release_date"`
+}

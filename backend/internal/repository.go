@@ -4,6 +4,7 @@ import (
 
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"database/sql"
+	"context"
 )
 
 type Repository struct {
@@ -14,6 +15,18 @@ func NewRepository(db *sql.DB) *Repository {
 	return &Repository{
 		db: db,		
 	}
+}
+
+func (r *Repository) PostMovie(ctx context.Context, req models.CreateMovieReq) (models.Movie, error) {
+	
+	err := r.db.QueryRowContext(
+
+	)
+
+	if err != nil {
+	return nil, err
+	}
+	return nil
 }
 
 func (r *Repository) GetMovies() ([]models.Movie, error) {
@@ -47,3 +60,5 @@ func (r *Repository) GetMovies() ([]models.Movie, error) {
 
 	return movies, nil
 }
+
+
