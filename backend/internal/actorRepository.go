@@ -20,7 +20,7 @@ func NewActorRepository(db *sql.DB) *ActorRepository {
 func (r *ActorRepository) GetActors() ([]models.Actor, error) {
 	var actors []models.Actor
 	rows, err := r.db.Query(
-	`
+		`
 	SELECT id, name, birth_date
 	FROM actors
 	`,
@@ -71,7 +71,7 @@ func (r *ActorRepository) GetActorByID(id int) (models.Actor, error) {
 func (r *ActorRepository) PostActor(ctx context.Context, actor models.Actor) (models.Actor, error) {
 
 	// res is an sql.Result, an interface that has a method such as the
-	// res.LastInsertId() method. 
+	// res.LastInsertId() method.
 	res, err := r.db.ExecContext(
 		ctx,
 		`INSERT INTO actors (name, birth_date) VALUES (?, ?)`,
