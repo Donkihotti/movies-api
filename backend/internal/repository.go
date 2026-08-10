@@ -16,15 +16,25 @@ func NewRepository(db *sql.DB) *Repository {
 	}
 }
 
-func (r *Repository) PostMovie(ctx context.Context, req models.CreateMovieReq) (models.Movie, error) {
-	
-	err := r.db.QueryRowContext(
+func (r *Repository) PostMovie(ctx context.Context, movie models.Movie) (models.Movie, error) {
 
+	res, err := r.db.ExecContext(
+	ctx, 
+	`INSERT INTO movies (title, description, release_date) VALUES (?, ?, ?)`, 
+	movie.Title, 
+	movie.Description,
+	movie.ReleaseDate,
 	)
 
 	if err != nil {
 	return models.Movie{}, err
 	}
+	id, err := res.LastInsertId()
+	if err != nil {
+	return models.Movie{}, err
+	}
+
+	movie.ID = int(id)
 	return movie, nil
 }
 

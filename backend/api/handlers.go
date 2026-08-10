@@ -66,6 +66,7 @@ func (h *Handler) CreateMovie(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-type", "application-json")
 	w.WriteHeader(http.StatusAccepted)
+	json.NewEncoder(w).Encode(movie)
 }
 
 func (h *Handler) MovieHandler(w http.ResponseWriter, r *http.Request) {
