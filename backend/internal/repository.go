@@ -1,7 +1,6 @@
 package internal 
 
 import (
-
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"database/sql"
 	"context"
@@ -24,9 +23,9 @@ func (r *Repository) PostMovie(ctx context.Context, req models.CreateMovieReq) (
 	)
 
 	if err != nil {
-	return nil, err
+	return models.Movie{}, err
 	}
-	return nil
+	return movie, nil
 }
 
 func (r *Repository) GetMovies() ([]models.Movie, error) {
@@ -59,6 +58,26 @@ func (r *Repository) GetMovies() ([]models.Movie, error) {
 	}
 
 	return movies, nil
+}
+
+func (r *Repository) GetMovieByID(id int) (models.Movie, error) {
+
+	var movie models.Movie
+	
+	row := r.db.QueryRow(
+		`SELECT id, title, description, release_date
+		FROM movies WHERE id = ?`, id)
+
+	err := row.Scan(
+	&movie.ID,
+	&movie.Title,
+	&movie.Description,
+	&movie.ReleaseDate,
+	)
+	if err != nil {
+		return models.Movie{}, err
+	}
+	return movie, nil
 }
 
 

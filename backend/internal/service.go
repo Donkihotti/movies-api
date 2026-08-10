@@ -29,6 +29,12 @@ func(s *Service) PostMovie(ctx context.Context, req models.CreateMovieReq) (mode
 	movie, err := s.repo.PostMovie(ctx, req)
 	if err != nil {
 	return nil, err
+}
+
+func(s *Service) GetMovieByID(id int) (models.Movie, error) {
+	movie, err := s.repo.GetMovieByID(id)
+	if err != nil {
+	return models.Movie{}, err
 	}
 	return movie, nil
 }

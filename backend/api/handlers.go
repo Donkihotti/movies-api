@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"encoding/json"
 	"log"
-
+	"strconv"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/internal"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 )
@@ -66,7 +66,26 @@ func (h *Handler) CreateMovie(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-type", "application-json")
 	w.WriteHeader(http.StatusAccepted)
+}
 
+func (h *Handler) MovieHandler(w http.ResponseWriter, r *http.Request) {
+
+	idString := r.PathValue("id")
+	id, err := strconv.Atoi(idString) 
+	if err != nil {
+	log.Printf("Invalid id: %v\n", idString)
+	http.Error(w, "Invalid id", http.StatusBadRequest)
+	return 
+	}
+
+	movie, err := h.service.GetMovieByID(id)
+	if err != nil {
+	log.Println("Server error", err)
+	http.Error(w, "Server error", http.StatusInternalServerError)
+	return
+	}
+
+	w.WriteHeader(http.StatusAccepted)
 	json.NewEncoder(w).Encode(movie)
 }
 

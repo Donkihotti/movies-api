@@ -10,9 +10,12 @@ func NewRouter(h *Handler) *http.ServeMux {
 
 	mux.HandleFunc("GET /", h.HomeHandler)
 	mux.HandleFunc("GET /movies", h.MoviesHandler)
-	mux.HandleFunc("POST /movie", h.CreateMovie)
-	mux.HandleFunc("GET /movie", h.CreateMovie)
-	mux.HandleFunc("PUT /movie", h.CreateMovie)
+	mux.HandleFunc("POST /movies", h.CreateMovie)
+
+	mux.HandleFunc("/", h.HomeHandler)
+	mux.HandleFunc("GET /movies", h.MoviesHandler)
+	mux.HandleFunc("GET /movies/{id}", h.MovieHandler)
 
 	return mux
 }
+
