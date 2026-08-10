@@ -25,10 +25,18 @@ func(s *Service) GetMovies() ([]models.Movie, error) {
 }
 
 func(s *Service) PostMovie(ctx context.Context, req models.CreateMovieReq) (models.Movie, error) {
+
+	movie := models.Movie{
+	Title: req.Title, 
+	Description: req.Description, 
+	ReleaseDate: req.ReleaseDate,
+	}
 	
-	movie, err := s.repo.PostMovie(ctx, req)
+	res, err := s.repo.PostMovie(ctx, movie)
 	if err != nil {
-	return nil, err
+	return models.Movie{}, err
+	}
+	return res, nil
 }
 
 func(s *Service) GetMovieByID(id int) (models.Movie, error) {
