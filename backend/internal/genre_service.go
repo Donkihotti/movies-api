@@ -1,6 +1,8 @@
 package internal 
 
 import (
+	"context"
+	 
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 )
 
@@ -14,12 +16,26 @@ func NewGenreService(repo *GenreRepository) *GenreService {
 	}
 }
 
-func(s *GenreService) getGenres() ([]models.Genre, error) {
+func(s *GenreService) GetGenres(ctx context.Context) ([]models.Genre, error) {
 	
-	genres, err := s.repo.GetGenres()
+	genres, err := s.repo.GetGenres(ctx)
 	if err != nil {
 	return nil, err
 	}
 	
 	return genres, nil
+}
+
+func(s *GenreService) PostGenre(ctx context.Context, req models.Genre) (models.Genre, error) {
+
+	genre := models.Genre{
+	Genre: req.Genre,
+	}
+
+	res, err := s.repo.PostGenre(ctx, genre)	
+	if err != nil {
+	return models.Genre{}, err
+	}
+	
+	return res, nil
 }

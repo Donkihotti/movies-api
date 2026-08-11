@@ -14,6 +14,7 @@ func NewRouter(h *Handler) *http.ServeMux {
 	mux.HandleFunc("GET /movies/{id}", h.MovieHandler)
 
 	mux.HandleFunc("GET /genres", h.GenreHandler)
+	mux.HandleFunc("POST /genres", h.CreateGenre)
 
 	return mux
 }

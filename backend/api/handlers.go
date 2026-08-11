@@ -9,6 +9,7 @@ import (
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 )
 
+
 type Handler struct {
 	MovieService *internal.MovieService
 	GenreService *internal.GenreService
@@ -66,6 +67,7 @@ func (h *Handler) CreateMovie(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Error posting movie", http.StatusBadRequest)
 	return 
 	}
+
 	w.Header().Set("Content-type", "application-json")
 	w.WriteHeader(http.StatusAccepted)
 	json.NewEncoder(w).Encode(movie)
@@ -95,8 +97,40 @@ func (h *Handler) MovieHandler(w http.ResponseWriter, r *http.Request) {
 
 
 func (h *Handler) GenreHandler(w http.ResponseWriter, r *http.Request) {
-	
-	
 
+	genre, err := h.GenreService.GetGenres(r.Context())
+	if err != nil {
+	http.Error(w, "Internal Server error", http.StatusInternalServerError) 	
+	}
+	
+	w.WriteHeader(http.StatusAccepted)
+	json.NewEncoder(w).Encode(genre)
+}
+
+
+func (h *Handler) CreateGenre(w http.ResponseWriter, r *http.Request) {
+	
+	if r.Method != http.MethodPost { 
+	http.Error(w, "Wrong method", http.StatusMethodNotAllowed)
+	}
+	
+	var req models.Genre
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&req); err != nil {
+	http.Error(w, "Bad request", http.StatusBadRequest)
+	return
+	}
+
+	genre, err := h.GenreService.PostGenre(r.Context(), req)
+	if err != nil {
+	log.Println(err)
+	http.Error(w, "Server error", http.StatusInternalServerError)
+	return 
+	}
+
+	w.Header().Set("Content-type", "application-json")
+	w.WriteHeader(http.StatusAccepted)
+	json.NewEncoder(w).Encode(genre)
 
 }
