@@ -6,17 +6,17 @@ import (
 	"context"
 )
 
-type Repository struct {
+type MovieRepository struct {
 	db *sql.DB
 }
 
-func NewRepository(db *sql.DB) *Repository {
-	return &Repository{
+func NewMovieRepository(db *sql.DB) *MovieRepository {
+	return &MovieRepository{
 		db: db,		
 	}
 }
 
-func (r *Repository) PostMovie(ctx context.Context, movie models.Movie) (models.Movie, error) {
+func (r *MovieRepository) PostMovie(ctx context.Context, movie models.Movie) (models.Movie, error) {
 
 	res, err := r.db.ExecContext(
 	ctx, 
@@ -38,7 +38,7 @@ func (r *Repository) PostMovie(ctx context.Context, movie models.Movie) (models.
 	return movie, nil
 }
 
-func (r *Repository) GetMovies() ([]models.Movie, error) {
+func (r *MovieRepository) GetMovies() ([]models.Movie, error) {
 
 	var movies []models.Movie
 	rows, err := r.db.Query(
@@ -70,7 +70,7 @@ func (r *Repository) GetMovies() ([]models.Movie, error) {
 	return movies, nil
 }
 
-func (r *Repository) GetMovieByID(id int) (models.Movie, error) {
+func (r *MovieRepository) GetMovieByID(id int) (models.Movie, error) {
 
 	var movie models.Movie
 	

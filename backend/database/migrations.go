@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
-	"fmt"
 )
 
 func RunMigrations(db *sql.DB) error {
@@ -17,7 +16,6 @@ func RunMigrations(db *sql.DB) error {
 
 	slices.Sort(files)	
 	for _, file := range files {
-		fmt.Println("running mig")
 		content, err := os.ReadFile(file)
 		if err != nil {
 			return err

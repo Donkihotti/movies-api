@@ -10,13 +10,15 @@ import (
 )
 
 type Handler struct {
-	service *internal.Service
+	MovieService *internal.MovieService
+	GenreService *internal.GenreService
 }
 
 
-func NewHandler(service *internal.Service) *Handler {
+func NewHandler(MovieService *internal.MovieService, GenreService *internal.GenreService) *Handler {
 	return &Handler{
-		service: service,
+		MovieService: MovieService,
+		GenreService: GenreService,
 	}
 }
 
@@ -32,7 +34,7 @@ func (h *Handler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 	return
 	}
 
-	movies, err := h.service.GetMovies()
+	movies, err := h.MovieService.GetMovies()
 	if err != nil {
 	log.Println("Server error",err)
 	http.Error(w, "Server error", http.StatusInternalServerError)
@@ -59,7 +61,7 @@ func (h *Handler) CreateMovie(w http.ResponseWriter, r *http.Request) {
 	return
 	}
 	
-	movie, err := h.service.PostMovie(r.Context(), req)
+	movie, err := h.MovieService.PostMovie(r.Context(), req)
 	if err != nil { 
 	http.Error(w, "Error posting movie", http.StatusBadRequest)
 	return 
@@ -68,6 +70,7 @@ func (h *Handler) CreateMovie(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusAccepted)
 	json.NewEncoder(w).Encode(movie)
 }
+
 
 func (h *Handler) MovieHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -79,10 +82,10 @@ func (h *Handler) MovieHandler(w http.ResponseWriter, r *http.Request) {
 	return 
 	}
 
-	movie, err := h.service.GetMovieByID(id)
+	movie, err := h.MovieService.GetMovieByID(id)
 	if err != nil {
 	log.Println("Server error", err)
-	http.Error(w, "Server error", http.StatusInternalServerError)
+	http.Error(w, "invalid id", http.StatusNotFound)
 	return
 	}
 
@@ -91,4 +94,9 @@ func (h *Handler) MovieHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 
+func (h *Handler) GenreHandler(w http.ResponseWriter, r *http.Request) {
+	
+	
 
+
+}
