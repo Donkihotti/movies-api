@@ -15,6 +15,7 @@ func NewRouter(h *Handler) *http.ServeMux {
 
 	mux.HandleFunc("GET /genres", h.GenreHandler)
 	mux.HandleFunc("POST /genres", h.CreateGenre)
+	mux.HandleFunc("DELETE /genres/{id}", h.DeleteGenre)
 
 	return mux
 }

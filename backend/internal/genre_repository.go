@@ -68,3 +68,24 @@ func (r *GenreRepository) PostGenre(ctx context.Context, genre models.Genre) (mo
 }
 
 
+func (r *GenreRepository) DeleteGenre(ctx context.Context, id int) error {
+
+	res, err := r.db.ExecContext(
+	ctx, 
+	`DELETE FROM genres WHERE id = ?`, 
+	id,
+	)
+	if err != nil {
+	return err
+	}
+	rows, err := res.RowsAffected()
+	if err != nil {
+	return err 
+	}
+	
+	if rows == 0 {
+	return sql.ErrNoRows
+	}
+	return nil
+}
+

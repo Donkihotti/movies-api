@@ -134,3 +134,24 @@ func (h *Handler) CreateGenre(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(genre)
 
 }
+
+
+func (h *Handler) DeleteGenre(w http.ResponseWriter, r *http.Request) {
+	
+	idString := r.PathValue("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+	log.Println(err)
+	http.Error(w, "Invalid id", http.StatusBadRequest)
+	return
+	}
+
+	err = h.GenreService.DeleteGenre(r.Context(), id)
+	if err != nil {
+	http.Error(w, "Bad request", http.StatusBadRequest)
+	return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+

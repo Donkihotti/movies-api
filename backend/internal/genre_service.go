@@ -39,3 +39,15 @@ func(s *GenreService) PostGenre(ctx context.Context, req models.Genre) (models.G
 	
 	return res, nil
 }
+
+func(s *GenreService) DeleteGenre(ctx context.Context, id int) error {
+
+	err := s.repo.DeleteGenre(ctx, id)
+	if err != nil {
+	return err
+	}
+	return nil
+}
+
+
+
