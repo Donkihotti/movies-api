@@ -20,9 +20,15 @@ func main() {
 
 	err = database.RunMigrations(db)
 
-	repo := internal.NewRepository(db)
+	//"the chain of command"
+	repo := internal.NewRepository(db) 
 	service := internal.NewService(repo)
-	handler := api.NewHandler(service)
+	actorRepo := internal.NewActorRepository(db)
+	actorService := internal.NewActorService(actorRepo)
+	handler := api.NewHandler(service, actorService)
+
+
+
 	router := api.NewRouter(handler)
 
 

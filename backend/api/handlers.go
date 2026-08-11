@@ -17,9 +17,10 @@ type Handler struct {
 }
 
 
-func NewHandler(service *internal.Service) *Handler {
+func NewHandler(service *internal.Service, actorService *internal.ActorService) *Handler {
 	return &Handler{
 		service: service,
+		actorService: actorService,
 	}
 }
 
@@ -153,5 +154,5 @@ func (h *Handler) ActorHandler(w http.ResponseWriter, r *http.Request) {
 			  }
 
 		  w.WriteHeader(http.StatusAccepted)
-			  json.NewEncoder(w).Encode(actor)
+		  json.NewEncoder(w).Encode(actor)
 }

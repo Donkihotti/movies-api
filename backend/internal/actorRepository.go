@@ -72,6 +72,8 @@ func (r *ActorRepository) PostActor(ctx context.Context, actor models.Actor) (mo
 
 	// res is an sql.Result, an interface that has a method such as the
 	// res.LastInsertId() method.
+
+	//TODO we need also to create a birthDate validator here. The date that the user inputs in this program needs to be a valid date. 
 	res, err := r.db.ExecContext(
 		ctx,
 		`INSERT INTO actors (name, birth_date) VALUES (?, ?)`,
@@ -90,5 +92,13 @@ func (r *ActorRepository) PostActor(ctx context.Context, actor models.Actor) (mo
 
 	actor.ID = int(id)
 	return actor, nil
+
+}
+//TODO: DELETE actors, PATCH actors, GET actors in a specific movie, GET all actors by its specific movie id. Retrieve actor by filtering their name. 
+
+
+func (r *ActorRepository) DeleteActor(ctx context.Context, actor models.Actor) error {
+
+
 
 }
