@@ -99,12 +99,11 @@ func (r *ActorRepository) PostActor(ctx context.Context, actor models.Actor) (mo
 //TODO: DELETE actors, PATCH actors, GET actors in a specific movie, GET all actors by its specific movie id. Retrieve actor by filtering their name. 
 func (r *ActorRepository) DeleteActor(ctx context.Context, id int) (models.Actor, error) {
 
-	query := `DELETE FROM actors WHERE id = ? RETURNING id, name, birth_date`
+	query := `DELETE FROM actors WHERE id = ?`
 
 	var actor models.Actor
 
-	err := r.db.QueryRowContext(ctx, query, id).Scan(&actor.id, &actor.Name,
-&actor.BirthDate)	
+	err := r.db.QueryRowContext(ctx, query, id).Scan(&actor.id, &actor.Name, &actor.BirthDate)	
 	if err != nil {
 	return models.Actor{}, err	
 	}
