@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"log"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 )
 
@@ -60,10 +61,11 @@ func (as *ActorService) DeleteActor(ctx context.Context, id int) error {
 	return nil
 }
 
-func (as *ActorService) PatchActor(ctx context.Context, actor models.Actor, id) error {
-	err := as.repo.PatchActor(ctx, actor, id)
+func (as *ActorService) PatchActor(ctx context.Context, actor models.Actor, id int) error {
+	err := as.repo.PatchActor(ctx, actor, id)	
 	if err != nil {
+		log.Println(err)
 		return err
-	}
+	}	
 	return nil
 }

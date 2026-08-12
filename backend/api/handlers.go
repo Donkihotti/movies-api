@@ -2,8 +2,10 @@ package api
 
 import (
 	"fmt"
+	"database/sql"
 	"net/http"
 	"encoding/json"
+	"errors"
 	"log"
 	"strconv"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/internal"
@@ -168,7 +170,7 @@ func(h *Handler) DeleteActorHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println(err)
 	return
 	}
-	err := h.actorService.DeleteActor(r.Context(), id)
+	err = h.actorService.DeleteActor(r.Context(), id)
 	fmt.Println(err)
 	if err != nil {
 	http.Error(w, "error deleting actor", http.StatusBadRequest)
@@ -189,10 +191,10 @@ func (h *Handler) PatchActorHandler(w http.ResponseWriter, r *http.Request) {
 		return 
 	}		
 	
-	var newActor models.Actor
+	var actor models.Actor
 
 	decoder := json.NewDecoder(r.Body)
-	decoder.DisAllowUnknownFields()
+	decoder.DisallowUnknownFields()
 
 	if err := decoder.Decode(&actor); err != nil {
 		log.Println(err)

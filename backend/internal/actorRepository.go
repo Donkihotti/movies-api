@@ -108,35 +108,40 @@ func (r *ActorRepository) DeleteActor(ctx context.Context, id int) error {
 	
 	rows, err := res.RowsAffected()
 	if err != nil {
+		fmt.Println(err)
 		return err	
 	}
 	
 	if rows == 0 {
-		return sql.ErrorNoRows
+		return sql.ErrNoRows
 	}	
 
 	return nil
 }
 
-func (r *ActorRepository) PatchActor(ctx context.Context, actor models.Actor) error {
+func (r *ActorRepository) PatchActor(ctx context.Context, actor models.Actor, id int) error {
 	
-	query := `UPDATE actors SET name = ? birth_date = ? WHERE id = ?`
-
-	res, err := r.db.ExecContext(ctx, query, actor.Name, actor.BirthDate, id)
+	query := `UPDATE actors SET name = ?, birth_date = ? WHERE id = ?`
+	row, err := r.db.ExecContext(ctx, query, actor.Name, actor.BirthDate, id)
 	if err != nil {
-		return err
+		fmt.Println(err)
+		return err 
 	}
-	
-	rows, err := res.RowsAffected()
+	rows, err := row.RowsAffected()
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 	
 	if rows == 0 {
-	return sql.ErrNoRows
+		return sql.ErrNoRows
 	}
-	return nil	
+	return nil
 }
+
+
+
+
 
 
 
