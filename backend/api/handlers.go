@@ -75,6 +75,29 @@ func (h *Handler) CreateMovie(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(movie)
 }
 
+func (h *Handler) PatchMovie(w http.ResponseWriter, r *http.Request) {
+
+	idString := r.PathValue("id")
+	id, err := strconv.Atoi(idString) 
+	if err != nil {
+	log.Println(err)
+	http.Error(w, "Invalid id", http.StatusBadRequest)
+	return
+	}
+	
+	var req models.Movie
+
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	decoder.Decode(&req)
+
+	if err := h.MovieService.PatchMovie(r.Context(), req, id); err != nil {
+	log.Println(err) 
+	http.Error(w, "Internal Server error", http.StatusInternalServerError)
+	return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
 
 func (h *Handler) MovieHandler(w http.ResponseWriter, r *http.Request) {
 

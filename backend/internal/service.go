@@ -27,7 +27,7 @@ func(s *MovieService) GetMovies() ([]models.Movie, error) {
 func(s *MovieService) PostMovie(ctx context.Context, req models.CreateMovieReq) (models.Movie, error) {
 
 	movie := models.Movie{
-	Title: req.Title, 
+	Title: 		 req.Title, 
 	Description: req.Description, 
 	ReleaseDate: req.ReleaseDate,
 	}
@@ -46,3 +46,15 @@ func(s *MovieService) GetMovieByID(id int) (models.Movie, error) {
 	}
 	return movie, nil
 }
+
+func(s *MovieService) PatchMovie(ctx context.Context, req models.Movie, id int) error {
+
+	err := s.repo.PatchMovie(ctx, req, id)	
+	if err != nil {
+	return err
+	}
+	return nil
+}
+
+
+

@@ -91,3 +91,31 @@ func (r *MovieRepository) GetMovieByID(id int) (models.Movie, error) {
 }
 
 
+func (r *MovieRepository) PatchMovie(ctx context.Context, movie models.Movie, id int) error {
+	
+	res, err := r.db.ExecContext(
+	ctx,
+	`
+	UPDATE movies SET title = ?, description = ?, release_date = ? WHERE id = ?
+	`,
+	movie.Title, 
+	movie.Description,
+	movie.ReleaseDate,
+	id, 
+	)
+	if err != nil {
+	return err 
+	}
+	
+	rows, err := res.RowsAffected()
+	if err != nil {
+	return err
+	}
+	if rows == 0 {
+	return sql.ErrNoRows
+	}
+	return nil
+}
+
+
+
