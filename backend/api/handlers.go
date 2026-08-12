@@ -12,8 +12,6 @@ import (
 
 type Handler struct {
 	service *internal.Service
-	//Tänne piti lisätä kanssa tää et voidaan importtaa metodit oikeasta
-	//paikasta
 	actorService *internal.ActorService
 }
 
@@ -170,16 +168,64 @@ func(h *Handler) DeleteActorHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println(err)
 	return
 	}
-	deletedActor, err := h.actorService.DeleteActor(r.Context(), id)
-	fmt.Println(deletedActor, err)
+	err := h.actorService.DeleteActor(r.Context(), id)
+	fmt.Println(err)
 	if err != nil {
 	http.Error(w, "error deleting actor", http.StatusBadRequest)
 	return  
 	}	
 	
-	w.WriteHeader(http.StatusOK)		
-	json.NewEncoder(w).Encode(deletedActor)		
-
+	w.WriteHeader(http.StatusNoContent)		
 } 
+
+
+func (h *Handler) PatchActorHandler(w http.ResponseWriter, r *http.Request) {
+	
+	idString := r.PathValue("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "invalid id", http.StatusBadRequest)
+		return 
+	}		
+	
+	var newActor models.Actor
+
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisAllowUnknownFields()
+
+	if err := decoder.Decode(&actor); err != nil {
+		log.Println(err)
+		http.Error(w, "error", http.StatusBadRequest)
+		return 
+	} 	
+
+	err = h.actorService.PatchActor(r.Context(), actor, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			http.Error(w, "actor not found", http.StatusNotFound)
+			log.Println(err)
+			return 
+		}
+		log.Println(err)
+		http.Error(w, "error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 

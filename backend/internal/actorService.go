@@ -49,14 +49,21 @@ func (as *ActorService) PostActor(ctx context.Context, req models.CreateActorReq
 }
 
 
-func (as *ActorService) DeleteActor(ctx context.Context, id int) (models.Actor, error) {
+func (as *ActorService) DeleteActor(ctx context.Context, id int) error {
 	
-	actor, err := as.DeleteActor(ctx, id)	
+	err := as.repo.DeleteActor(ctx, id)	
 	if err != nil {
 	log.Println(err)
-	return models.Actor{}, err
+	return err
 	}
 
-	return actor, nil
+	return nil
 }
 
+func (as *ActorService) PatchActor(ctx context.Context, actor models.Actor, id) error {
+	err := as.repo.PatchActor(ctx, actor, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
