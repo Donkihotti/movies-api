@@ -89,3 +89,29 @@ func (r *GenreRepository) DeleteGenre(ctx context.Context, id int) error {
 	return nil
 }
 
+func (r *GenreRepository) PutGenre(ctx context.Context, newGenre models.Genre, id int) error {
+	
+	res, err := r.db.ExecContext(
+	ctx, 
+	`UPDATE genres SET genre_name = ? WHERE id = ?`, 
+	newGenre.Genre, 
+	id,
+	)		
+	if err != nil {
+	return err
+	}
+
+	rows, err := res.RowsAffected() 
+	if err != nil {
+	return err 
+	}
+	if rows == 0 {
+	return sql.ErrNoRows
+ 	}
+
+	return nil
+
+}
+
+
+

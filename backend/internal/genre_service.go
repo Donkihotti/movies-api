@@ -50,4 +50,12 @@ func(s *GenreService) DeleteGenre(ctx context.Context, id int) error {
 }
 
 
+func (s *GenreService) PutGenre(ctx context.Context, newGenre models.Genre, id int) error {
 
+	err := s.repo.PutGenre(ctx, newGenre, id)
+	if err != nil {
+	return err 
+	}
+	return nil
+
+}
