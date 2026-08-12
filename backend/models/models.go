@@ -26,7 +26,3 @@ type CreateGenreReq struct {
 	Genre 		string  `json:"genre_name"`
 }
 
-type PutGenreReq struct {
-	ID 			int  	`json:"id"`
-	Genre 		string  `json:"genre_name"`
-}
