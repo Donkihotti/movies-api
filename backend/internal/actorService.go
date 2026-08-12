@@ -47,3 +47,77 @@ func (as *ActorService) PostActor(ctx context.Context, req models.CreateActorReq
 	}
 	return res, nil
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+func (as *ActorService) DeleteActor(ctx context.Context, id int) (models.Actor, error) {
+	
+	actor, err := as.DeleteActor(ctx, id)	
+	if err != nil {
+	log.Println(err)
+	return models.Actor{}, err
+	}
+
+	return actor, nil
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

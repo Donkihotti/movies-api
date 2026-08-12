@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"encoding/json"
 	"log"
@@ -126,7 +127,7 @@ func (h *Handler) ActorsHandler(w http.ResponseWriter, r *http.Request) {
 
 	actors, err := h.actorService.GetActors()
 		if err != nil {
-			log.Println("Server error",err)
+			fmt.Println("Server error",err)
 				http.Error(w, "Server error", http.StatusInternalServerError)
 				return
 		}
@@ -156,3 +157,29 @@ func (h *Handler) ActorHandler(w http.ResponseWriter, r *http.Request) {
 		  w.WriteHeader(http.StatusAccepted)
 		  json.NewEncoder(w).Encode(actor)
 }
+
+
+
+
+func(h *Handler) DeleteActorHandler(w http.ResponseWriter, r *http.Request) {
+
+	idString := r.PathValue("id")
+	id, err := strconv.Atoi(idString)	
+	if err != nil {
+	http.Error(w, "invalid id", http.StatusBadRequest)
+	log.Println(err)
+	return
+	}
+	deletedActor, err := h.actorService.DeleteActor(r.Context(), id)
+	fmt.Println(deletedActor, err)
+	if err != nil {
+	http.Error(w, "error deleting actor", http.StatusBadRequest)
+	return  
+	}	
+	
+	w.WriteHeader(http.StatusOK)		
+	json.NewEncoder(w).Encode(deletedActor)		
+
+} 
+
+
