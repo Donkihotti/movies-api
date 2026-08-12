@@ -5,18 +5,18 @@ import (
 	"context"
 )
 
-type Service struct {
-	repo *Repository	
+type MovieService struct {
+	repo *MovieRepository	
 }
 
-func NewService(repo *Repository) *Service {
-	return &Service{
+func NewMovieService(repo *MovieRepository) *MovieService {
+	return &MovieService{
 		repo: repo,
 	}
 }
 
 
-func(s *Service) GetMovies() ([]models.Movie, error) {
+func(s *MovieService) GetMovies() ([]models.Movie, error) {
 	movies, err := s.repo.GetMovies()	
 	if err != nil {
 	return nil, err
@@ -24,7 +24,7 @@ func(s *Service) GetMovies() ([]models.Movie, error) {
 	return movies, nil
 }
 
-func(s *Service) PostMovie(ctx context.Context, req models.CreateMovieReq) (models.Movie, error) {
+func(s *MovieService) PostMovie(ctx context.Context, req models.CreateMovieReq) (models.Movie, error) {
 
 	movie := models.Movie{
 	Title: req.Title, 
@@ -39,7 +39,7 @@ func(s *Service) PostMovie(ctx context.Context, req models.CreateMovieReq) (mode
 	return res, nil
 }
 
-func(s *Service) GetMovieByID(id int) (models.Movie, error) {
+func(s *MovieService) GetMovieByID(id int) (models.Movie, error) {
 	movie, err := s.repo.GetMovieByID(id)
 	if err != nil {
 	return models.Movie{}, err

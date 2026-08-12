@@ -13,6 +13,11 @@ func NewRouter(h *Handler) *http.ServeMux {
 	mux.HandleFunc("GET /movies", h.MoviesHandler)
 	mux.HandleFunc("GET /movies/{id}", h.MovieHandler)
 
+	mux.HandleFunc("GET /genres", h.GenreHandler)
+	mux.HandleFunc("POST /genres", h.CreateGenre)
+	mux.HandleFunc("DELETE /genres/{id}", h.DeleteGenre)
+	mux.HandleFunc("PUT /genres/{id}", h.PutGenre)
+
 	return mux
 }
 

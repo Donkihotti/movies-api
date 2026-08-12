@@ -20,9 +20,13 @@ func main() {
 
 	err = database.RunMigrations(db)
 
-	repo := internal.NewRepository(db)
-	service := internal.NewService(repo)
-	handler := api.NewHandler(service)
+	movieRepo := internal.NewMovieRepository(db)
+	genreRepo := internal.NewGenreRepository(db)
+
+	movieService := internal.NewMovieService(movieRepo)
+	genreService := internal.NewGenreService(genreRepo)
+
+	handler := api.NewHandler(movieService, genreService)
 	router := api.NewRouter(handler)
 
 	log.Println("Server running at port :8080")
