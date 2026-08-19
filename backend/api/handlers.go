@@ -123,7 +123,7 @@ func (h *Handler) CreateActor(w http.ResponseWriter, r *http.Request) {
 }
 
 
-func (h *Handler) ActorsHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetActorsHandler(w http.ResponseWriter, r *http.Request) {
 
 	actors, err := h.actorService.GetActors()
 		if err != nil {
@@ -137,7 +137,7 @@ func (h *Handler) ActorsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 
-func (h *Handler) ActorHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetActorHandler(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
 			  id, err := strconv.Atoi(idString) 
