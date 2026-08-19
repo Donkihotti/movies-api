@@ -8,8 +8,8 @@ import (
 	"errors"
 	"log"
 	"strconv"
-	"errors"
-	"database/sql"
+
+
 	"gitea.kood.tech/timdanielfiander/movies-api.git/internal"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 )
@@ -18,15 +18,15 @@ import (
 type Handler struct {
 	MovieService *internal.MovieService
 	GenreService *internal.GenreService
-	actorService *internal.ActorService
+	ActorService *internal.ActorService
 }
 
 
-func NewHandler(MovieService *internal.MovieService, GenreService *internal.GenreService, actorService *internal.ActorService) *Handler {
+func NewHandler(MovieService *internal.MovieService, GenreService *internal.GenreService, ActorService *internal.ActorService) *Handler {
 	return &Handler{
 		MovieService: MovieService,
 		GenreService: GenreService,
-		actorService: ActorService,
+		ActorService: ActorService,
 	}
 }
 
@@ -196,7 +196,7 @@ func (h *Handler) CreateActor(w http.ResponseWriter, r *http.Request) {
 				return
 		}
 
-	actor, err := h.actorService.PostActor(r.Context(), req)
+	actor, err := h.ActorService.PostActor(r.Context(), req)
 		if err != nil { 
 			http.Error(w, "Error posting actor", http.StatusBadRequest)
 				return 
@@ -209,7 +209,7 @@ func (h *Handler) CreateActor(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) GetActorsHandler(w http.ResponseWriter, r *http.Request) {
 
-	actors, err := h.actorService.GetActors()
+	actors, err := h.ActorService.GetActors()
 		if err != nil {
 			fmt.Println("Server error",err)
 				http.Error(w, "Server error", http.StatusInternalServerError)
@@ -231,7 +231,7 @@ func (h *Handler) GetActorHandler(w http.ResponseWriter, r *http.Request) {
 					  return 
 			  }
 
-		  actor, err := h.actorService.GetActorByID(id)
+		  actor, err := h.ActorService.GetActorByID(id)
 			  if err != nil {
 				  log.Println("Server error", err)
 					  http.Error(w, "Server error", http.StatusInternalServerError)
@@ -251,7 +251,7 @@ func(h *Handler) DeleteActorHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println(err)
 	return
 	}
-	err = h.actorService.DeleteActor(r.Context(), id)
+	err = h.ActorService.DeleteActor(r.Context(), id)
 	fmt.Println(err)
 	if err != nil {
 	http.Error(w, "error deleting actor", http.StatusBadRequest)
@@ -260,26 +260,6 @@ func(h *Handler) DeleteActorHandler(w http.ResponseWriter, r *http.Request) {
 	
 	w.WriteHeader(http.StatusNoContent)		
 } 
-
-
-func (h *Handler) PatchActorHandler(w http.ResponseWriter, r *http.Request) {
-	
-	idString := r.PathValue("id")
-	id, err := strconv.Atoi(idString)
-	if err != nil {
-	log.Println(err)
-	http.Error(w, "Invalid id", http.StatusBadRequest)
-	return
-	}
-
-	err = h.GenreService.DeleteGenre(r.Context(), id)
-	if err != nil {
-	http.Error(w, "Bad request", http.StatusBadRequest)
-	return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-}
 
 
 func (h *Handler) PutGenre(w http.ResponseWriter, r *http.Request) {
@@ -320,7 +300,6 @@ func (h *Handler) PatchActorHandler(w http.ResponseWriter, r *http.Request) {
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)
 	if err != nil {
-	log.Error(err)
 	http.Error(w, "Invalid ID", http.StatusBadRequest)
 	return
 	}
@@ -336,7 +315,7 @@ func (h *Handler) PatchActorHandler(w http.ResponseWriter, r *http.Request) {
 		return 
 	} 	
 
-	err = h.actorService.PatchActor(r.Context(), actor, id)
+	err = h.ActorService.PatchActor(r.Context(), actor, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			http.Error(w, "actor not found", http.StatusNotFound)
