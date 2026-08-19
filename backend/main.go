@@ -22,11 +22,14 @@ func main() {
 
 	movieRepo := internal.NewMovieRepository(db)
 	genreRepo := internal.NewGenreRepository(db)
+	actorRepo := internal.NewActorRepository(db)
 
 	movieService := internal.NewMovieService(movieRepo)
 	genreService := internal.NewGenreService(genreRepo)
+	actorService := internal.NewActorService(actorRepo)
 
-	handler := api.NewHandler(movieService, genreService)
+	handler := api.NewHandler(movieService, genreService, actorService)
+
 	router := api.NewRouter(handler)
 
 	log.Println("Server running at port :8080")
