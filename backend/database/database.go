@@ -1,18 +1,16 @@
 package database
 
-import ( 
-
+import (
 	"database/sql"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
-
 func Connect() (*sql.DB, error) {
 	db, err := sql.Open("sqlite3", "./movies.db")
-		if err != nil {
+	if err != nil {
 		return nil, err
-		}
+	}
 
 	if err := db.Ping(); err != nil {
 		return nil, err
@@ -20,6 +18,3 @@ func Connect() (*sql.DB, error) {
 
 	return db, nil
 }
-
-
-

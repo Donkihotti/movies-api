@@ -1,12 +1,12 @@
 package internal
 
 import (
-	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"context"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 )
 
 type MovieService struct {
-	repo *MovieRepository	
+	repo *MovieRepository
 }
 
 func NewMovieService(repo *MovieRepository) *MovieService {
@@ -15,46 +15,42 @@ func NewMovieService(repo *MovieRepository) *MovieService {
 	}
 }
 
-
-func(s *MovieService) GetMovies() ([]models.Movie, error) {
-	movies, err := s.repo.GetMovies()	
+func (s *MovieService) GetMovies() ([]models.Movie, error) {
+	movies, err := s.repo.GetMovies()
 	if err != nil {
-	return nil, err
+		return nil, err
 	}
 	return movies, nil
 }
 
-func(s *MovieService) PostMovie(ctx context.Context, req models.CreateMovieReq) (models.Movie, error) {
+func (s *MovieService) PostMovie(ctx context.Context, req models.CreateMovieReq) (models.Movie, error) {
 
 	movie := models.Movie{
-	Title: 		 req.Title, 
-	Description: req.Description, 
-	ReleaseDate: req.ReleaseDate,
+		Title:       req.Title,
+		Description: req.Description,
+		ReleaseDate: req.ReleaseDate,
 	}
-	
+
 	res, err := s.repo.PostMovie(ctx, movie)
 	if err != nil {
-	return models.Movie{}, err
+		return models.Movie{}, err
 	}
 	return res, nil
 }
 
-func(s *MovieService) GetMovieByID(id int) (models.Movie, error) {
+func (s *MovieService) GetMovieByID(id int) (models.Movie, error) {
 	movie, err := s.repo.GetMovieByID(id)
 	if err != nil {
-	return models.Movie{}, err
+		return models.Movie{}, err
 	}
 	return movie, nil
 }
 
-func(s *MovieService) PatchMovie(ctx context.Context, req models.Movie, id int) error {
+func (s *MovieService) PatchMovie(ctx context.Context, req models.Movie, id int) error {
 
-	err := s.repo.PatchMovie(ctx, req, id)	
+	err := s.repo.PatchMovie(ctx, req, id)
 	if err != nil {
-	return err
+		return err
 	}
 	return nil
 }
-
-
-

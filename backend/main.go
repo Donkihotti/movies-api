@@ -1,20 +1,19 @@
-package main 
+package main
 
 import (
-	"net/http"
 	"log"
-	"fmt"
+	"net/http"
 
 	"gitea.kood.tech/timdanielfiander/movies-api.git/api"
-	"gitea.kood.tech/timdanielfiander/movies-api.git/internal"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/database"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/internal"
 )
 
 func main() {
 
 	db, err := database.Connect()
 	if err != nil {
-	log.Fatal(err) 
+		log.Fatal(err)
 	}
 
 	defer db.Close()
@@ -36,7 +35,6 @@ func main() {
 	log.Println("Server running at port :8080")
 	err = http.ListenAndServe(":8080", router)
 	if err != nil {
-		log.Fatal("Starting server failed", err)	
+		log.Fatal("Starting server failed", err)
 	}
 }
-

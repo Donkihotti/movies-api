@@ -3,8 +3,8 @@ package internal
 import (
 	"context"
 	"database/sql"
-	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"fmt"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 )
 
 type ActorRepository struct {
@@ -74,7 +74,7 @@ func (r *ActorRepository) PostActor(ctx context.Context, actor models.Actor) (mo
 	// res is an sql.Result, an interface that has a method such as the
 	// res.LastInsertId() method.
 
-	//TODO we need also to create a birthDate validator here. The date that the user inputs in this program needs to be a valid date. 
+	//TODO we need also to create a birthDate validator here. The date that the user inputs in this program needs to be a valid date.
 	res, err := r.db.ExecContext(
 		ctx,
 		`INSERT INTO actors (name, birth_date) VALUES (?, ?)`,
@@ -96,61 +96,45 @@ func (r *ActorRepository) PostActor(ctx context.Context, actor models.Actor) (mo
 
 }
 
-//TODO: DELETE actors, PATCH actors, GET actors in a specific movie, GET all actors by its specific movie id. Retrieve actor by filtering their name. 
+// TODO: DELETE actors, PATCH actors, GET actors in a specific movie, GET all actors by its specific movie id. Retrieve actor by filtering their name.
 func (r *ActorRepository) DeleteActor(ctx context.Context, id int) error {
 
 	query := `DELETE FROM actors WHERE id = ?`
 
 	res, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
-	return err	
+		return err
 	}
-	
+
 	rows, err := res.RowsAffected()
 	if err != nil {
 		fmt.Println(err)
-		return err	
+		return err
 	}
-	
+
 	if rows == 0 {
 		return sql.ErrNoRows
-	}	
+	}
 
 	return nil
 }
 
 func (r *ActorRepository) PatchActor(ctx context.Context, actor models.Actor, id int) error {
-	
+
 	query := `UPDATE actors SET name = ?, birth_date = ? WHERE id = ?`
 	row, err := r.db.ExecContext(ctx, query, actor.Name, actor.BirthDate, id)
 	if err != nil {
 		fmt.Println(err)
-		return err 
+		return err
 	}
 	rows, err := row.RowsAffected()
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
-	
+
 	if rows == 0 {
 		return sql.ErrNoRows
 	}
 	return nil
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

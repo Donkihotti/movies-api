@@ -1,7 +1,7 @@
-package database 
+package database
 
-import ( 
-	"database/sql" 
+import (
+	"database/sql"
 	"os"
 	"path/filepath"
 	"slices"
@@ -14,7 +14,7 @@ func RunMigrations(db *sql.DB) error {
 		return err
 	}
 
-	slices.Sort(files)	
+	slices.Sort(files)
 	for _, file := range files {
 		content, err := os.ReadFile(file)
 		if err != nil {
@@ -26,5 +26,5 @@ func RunMigrations(db *sql.DB) error {
 			return err
 		}
 	}
-	return nil	
+	return nil
 }
