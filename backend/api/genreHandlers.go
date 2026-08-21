@@ -21,6 +21,13 @@ func (h *Handler) GenreHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(genre)
 }
 
+
+func (h *Handler) GetGenre(w http.ResponseWriter, r *http.Request) {
+	
+
+}
+
+
 func (h *Handler) CreateGenre(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodPost {
