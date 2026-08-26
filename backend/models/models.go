@@ -5,14 +5,13 @@ type Movie struct {
 	Title       string  `json:"title"`
 	Description string  `json:"description"`
 	ReleaseDate int     `json:"release_date"`
-	Genres      []Genre `json:"genres"`
 }
 
 type CreateMovieReq struct {
 	Title       string  `json:"title"`
 	Description string  `json:"description"`
 	ReleaseDate int     `json:"release_date"`
-	Genres      []Genre `json:"genres"`
+	GenreIDs    []int 	`json:"genre_ids"`
 }
 
 type Genre struct {

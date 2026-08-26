@@ -34,7 +34,6 @@ func (s *GenreService) GetGenre(ctx context.Context, id int) ([]models.Movie, er
 	}
 
 	return genre, nil
-
 }
 
 func (s *GenreService) PostGenre(ctx context.Context, req models.Genre) (models.Genre, error) {

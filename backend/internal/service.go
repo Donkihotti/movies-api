@@ -31,7 +31,7 @@ func (s *MovieService) PostMovie(ctx context.Context, req models.CreateMovieReq)
 		ReleaseDate: req.ReleaseDate,
 	}
 
-	res, err := s.repo.PostMovie(ctx, movie)
+	res, err := s.repo.PostMovie(ctx, movie, req.GenreIDs)
 	if err != nil {
 		return models.Movie{}, err
 	}

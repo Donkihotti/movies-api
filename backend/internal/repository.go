@@ -16,25 +16,53 @@ func NewMovieRepository(db *sql.DB) *MovieRepository {
 	}
 }
 
-func (r *MovieRepository) PostMovie(ctx context.Context, movie models.Movie) (models.Movie, error) {
+func (r *MovieRepository) PostMovie(ctx context.Context, movie models.Movie, genreIds []int) (models.Movie, error) {
 
-	res, err := r.db.ExecContext(
-		ctx,
-		`INSERT INTO movies (title, description, release_date) VALUES (?, ?, ?)`,
-		movie.Title,
-		movie.Description,
-		movie.ReleaseDate,
-	)
-
+	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return models.Movie{}, err
 	}
+
+	defer tx.Rollback()
+
+	res, err := tx.ExecContext(
+	ctx, 
+	`INSERT INTO movies (title, description, release_date)
+	VALUES (?, ?, ?)
+	`,
+	movie.Title,
+	movie.Description,
+	movie.ReleaseDate,
+	)
+	if err != nil {
+	return models.Movie{}, err
+	}
+
 	id, err := res.LastInsertId()
 	if err != nil {
-		return models.Movie{}, err
+	return models.Movie{}, err 
 	}
 
 	movie.ID = int(id)
+	
+	for _, genreId := range genreIds {
+		_, err := tx.ExecContext(
+		ctx, 
+		`INSERT INTO movie_genres (movie_id, genre_id)
+		VALUES (?, ?)
+		`,
+		movie.ID,
+		genreId,
+		)
+		if err != nil {
+		return models.Movie{}, err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+	return models.Movie{}, err
+	}
+
 	return movie, nil
 }
 
