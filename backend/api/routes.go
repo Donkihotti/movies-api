@@ -13,6 +13,7 @@ func NewRouter(h *Handler) *http.ServeMux {
 	mux.HandleFunc("GET /movies", h.MoviesHandler)
 	mux.HandleFunc("GET /movies/{id}", h.MovieHandler)
 	mux.HandleFunc("PATCH /movies/{id}", h.PatchMovie)
+	mux.HandleFunc("DELETE /movies/{id}", h.DeleteMovie)
 
 	mux.HandleFunc("GET /genres", h.GenreHandler)
 	mux.HandleFunc("POST /genres", h.CreateGenre)
@@ -21,6 +22,8 @@ func NewRouter(h *Handler) *http.ServeMux {
 
 	mux.HandleFunc("POST /actors", h.CreateActor)
 	mux.HandleFunc("GET /actors", h.GetActorsHandler)
+	mux.HandleFunc("GET /actors/name/{name}", h.GetActorsByNameHandler)
+	mux.HandleFunc("GET /actors/birthdate/{birthdate}", h.GetActorsByBirthdateHandler)
 	mux.HandleFunc("GET /actors/{id}", h.GetActorHandler)
 	mux.HandleFunc("DELETE /actors/{id}", h.DeleteActorHandler)
 	mux.HandleFunc("PATCH /actors/{id}", h.PatchActorHandler)

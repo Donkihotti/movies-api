@@ -11,9 +11,12 @@ import (
 	"strconv"
 )
 
+//GET ALL ACTORS
 func (h *Handler) GetActorsHandler(w http.ResponseWriter, r *http.Request) {
 
-	actors, err := h.ActorService.GetActors()
+	name := r.URL.Query().Get("name")	
+	
+	actors, err := h.ActorService.GetActors(name)
 	if err != nil {
 		fmt.Println("Server error", err)
 		http.Error(w, "Server error", http.StatusInternalServerError)

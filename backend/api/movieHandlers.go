@@ -96,3 +96,23 @@ func (h *Handler) PatchMovie(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusNoContent)
 }
+
+//delete a movie
+func (h *Handler) DeleteMovie(w http.ResponseWriter, r *http.Request) {
+
+	idString := r.PathValue("id")
+	id, err := strconv.Atoi(idString) 
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.MovieService.DeleteMovie(r.Context(), id); err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
