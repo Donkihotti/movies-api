@@ -8,12 +8,8 @@ import (
 	"strconv"
 )
 
+//GET ALL MOVIES
 func (h *Handler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 
 	movies, err := h.MovieService.GetMovies()
 	if err != nil {
@@ -26,6 +22,7 @@ func (h *Handler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(movies)
 }
 
+//GET MOVIE BY ID
 func (h *Handler) MovieHandler(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
@@ -47,57 +44,55 @@ func (h *Handler) MovieHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(movie)
 }
 
+//POST MOVIE
 func (h *Handler) CreateMovie(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Status not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 
-	var req models.CreateMovieReq
-	decoder := json.NewDecoder(r.Body)
-	decoder.DisallowUnknownFields()
+    var req models.Movie
+    decoder := json.NewDecoder(r.Body)
+    decoder.DisallowUnknownFields()
 
-	if err := decoder.Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+    if err := decoder.Decode(&req); err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }   
 
-	movie, err := h.MovieService.PostMovie(r.Context(), req)
-	if err != nil {
-		http.Error(w, "Error posting movie", http.StatusBadRequest)
-		return
-	}
-	w.Header().Set("Content-type", "application/json")
+    movie, err := h.MovieService.PostMovie(r.Context(), req)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }   
+    w.Header().Set("Content-type", "application/json")
 
-	w.WriteHeader(http.StatusAccepted)
-	json.NewEncoder(w).Encode(movie)
+    w.WriteHeader(http.StatusAccepted)
+    json.NewEncoder(w).Encode(movie)
 }
 
+//PATCH MOVIE
 func (h *Handler) PatchMovie(w http.ResponseWriter, r *http.Request) {
 
-	idString := r.PathValue("id")
-	id, err := strconv.Atoi(idString)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, "Invalid id", http.StatusBadRequest)
-		return
-	}
+    idString := r.PathValue("id")
+    id, err := strconv.Atoi(idString)
+    if err != nil {
+        log.Println(err)
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }   
 
-	var req models.Movie
+    var req models.PatchMovieReq
 
-	decoder := json.NewDecoder(r.Body)
-	decoder.DisallowUnknownFields()
-	decoder.Decode(&req)
+    decoder := json.NewDecoder(r.Body)
+    decoder.DisallowUnknownFields()
+    decoder.Decode(&req)
 
-	if err := h.MovieService.PatchMovie(r.Context(), req, id); err != nil {
-		log.Println(err)
-		http.Error(w, "Internal Server error", http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusNoContent)
+    if err := h.MovieService.PatchMovie(r.Context(), req, id); err != nil {
+        log.Println(err)
+        http.Error(w, "Internal Server error", http.StatusInternalServerError)
+        return
+    }
+    w.WriteHeader(http.StatusNoContent)
 }
 
-//delete a movie
+//DELETE MOVIE
 func (h *Handler) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")

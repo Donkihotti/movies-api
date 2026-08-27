@@ -4,7 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
+	"errors"
+	"time"
 )
 
 type ActorRepository struct {
@@ -18,33 +21,44 @@ func NewActorRepository(db *sql.DB) *ActorRepository {
 }
 
 // GET ALL ACTORS
-func (r *ActorRepository) GetActors() ([]models.Actor, error) {
-	var actors []models.Actor
-	rows, err := r.db.Query(
-		`
-	SELECT id, name, birth_date
-	FROM actors
-	`,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
+func (r *ActorRepository) GetActors(name string) ([]models.Actor, error) {
+    var actors []models.Actor
+    var rows *sql.Rows
+    var err error
 
-	for rows.Next() {
-		var actor models.Actor
-		err := rows.Scan(
-			&actor.ID,
-			&actor.Name,
-			&actor.BirthDate,
-		)
-		if err != nil {
-			return nil, err
-		}
-		actors = append(actors, actor)
-	}
+    if name == "" {
+        query := "SELECT id, name, birth_date FROM actors"
+        rows, err = r.db.Query(query)
+        if err != nil {
+            log.Println(err)
+            return actors, err
+        }
+    } else {
+        name = fmt.Sprintf("%%%s%%", name)
+        query := "SELECT id, name, birth_date FROM actors WHERE name LIKE ?" 
+        rows, err = r.db.Query(query, name)
+        if err != nil {
+            log.Println(err)
+            return actors, err
+        }
+    }
 
-	return actors, nil
+    defer rows.Close()
+
+    for rows.Next() {
+        var actor models.Actor
+        err := rows.Scan(
+            &actor.ID,
+            &actor.Name,
+            &actor.BirthDate,
+        )
+        if err != nil {
+            return nil, err
+        }
+        actors = append(actors, actor)
+    }
+
+    return actors, nil
 }
 
 // GET AN INDIVIDUAL ACTOR
@@ -67,19 +81,31 @@ func (r *ActorRepository) GetActorByID(id int) (models.Actor, error) {
 	return actor, nil
 }
 
-//POST AN INDIVIDUAL ACTOR
-
-func (r *ActorRepository) PostActor(ctx context.Context, actor models.Actor) (models.Actor, error) {
+//POST AN ACTOR
+func (r *ActorRepository) PostActor(ctx context.Context, req models.Actor) (models.Actor, error) {
 
 	// res is an sql.Result, an interface that has a method such as the
 	// res.LastInsertId() method.
 
-	//TODO we need also to create a birthDate validator here. The date that the user inputs in this program needs to be a valid date.
+    if req.Name == "" || req.BirthDate == "" {
+        message := "cannot post actor with empty struct fields"
+        log.Println(message)
+        return models.Actor{}, errors.New(message)
+    }   
+
+    timeLayout := "2006-01-02"
+    birthdate := req.BirthDate
+    _, err := time.Parse(timeLayout, birthdate)
+    if err != nil {
+        log.Println("invalid birthdate: ", birthdate)
+        return models.Actor{}, err 
+    }   	
+
 	res, err := r.db.ExecContext(
 		ctx,
 		`INSERT INTO actors (name, birth_date) VALUES (?, ?)`,
-		actor.Name,
-		actor.BirthDate,
+		req.Name,
+		req.BirthDate,
 	)
 
 	if err != nil {
@@ -91,12 +117,12 @@ func (r *ActorRepository) PostActor(ctx context.Context, actor models.Actor) (mo
 		return models.Actor{}, err
 	}
 
-	actor.ID = int(id)
-	return actor, nil
+	req.ID = int(id)
+	return req, nil
 
 }
 
-// TODO: DELETE actors, PATCH actors, GET actors in a specific movie, GET all actors by its specific movie id. Retrieve actor by filtering their name.
+//DELETE AN ACTOR
 func (r *ActorRepository) DeleteActor(ctx context.Context, id int) error {
 
 	query := `DELETE FROM actors WHERE id = ?`
@@ -119,22 +145,104 @@ func (r *ActorRepository) DeleteActor(ctx context.Context, id int) error {
 	return nil
 }
 
-func (r *ActorRepository) PatchActor(ctx context.Context, actor models.Actor, id int) error {
+//PATCH AN ACTOR
+func (r *ActorRepository) PatchActor(ctx context.Context, req models.PatchActorReq, id int) error {
 
-	query := `UPDATE actors SET name = ?, birth_date = ? WHERE id = ?`
-	row, err := r.db.ExecContext(ctx, query, actor.Name, actor.BirthDate, id)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-	rows, err := row.RowsAffected()
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
+    query := `UPDATE actors SET name = COALESCE(?, name), birth_date = COALESCE(?, birth_date) WHERE id = ?`
+    row, err := r.db.ExecContext(ctx, query, req.Name, req.BirthDate, id)
+    if err != nil {
+        fmt.Println(err)
+        return err
+    }
+    rows, err := row.RowsAffected()
+    if err != nil {
+        fmt.Println(err)
+        return err
+    }
 
-	if rows == 0 {
-		return sql.ErrNoRows
-	}
-	return nil
+    if rows == 0 {
+        return sql.ErrNoRows
+    }
+    return nil
 }
+
+//GET ACTORS BY NAME
+func (r *ActorRepository) GetActorsByName(ctx context.Context, name string) ([]models.Actor, error) {
+
+    var actors []models.Actor
+
+    name = fmt.Sprintf("%%%s%%", name)
+
+    query := `SELECT id, name, birth_date FROM actors WHERE name LIKE ?`
+
+    rows, err := r.db.QueryContext(ctx, query, name)
+    if err != nil {
+        log.Println(err)
+        return actors, err
+    }
+    defer rows.Close()
+
+    for rows.Next() {
+        var actor models.Actor
+        err := rows.Scan(
+            &actor.ID,
+            &actor.Name,
+            &actor.BirthDate,
+        )
+        if err != nil {
+            log.Println(err)
+            return []models.Actor{}, err
+        }
+        actors = append(actors, actor)
+    }
+
+    return actors, nil
+
+}
+
+//GET ACTORS BY BIRTHDATE
+func (r *ActorRepository) GetActorsByBirthdate(ctx context.Context, birthdate string) ([]models.Actor, error) {
+
+    var actors []models.Actor
+
+    query := `SELECT id, name, birth_date FROM actors WHERE birth_date = ?`
+
+    rows, err := r.db.QueryContext(ctx, query, birthdate)
+    if err != nil {
+        log.Println(err)
+        return []models.Actor{}, err
+    }
+
+    for rows.Next() {
+        var actor models.Actor
+
+        err := rows.Scan(
+            &actor.ID,
+            &actor.Name,
+            &actor.BirthDate,
+        )
+        if err != nil {
+            log.Println(err)
+                return []models.Actor{}, err
+        }
+        actors = append(actors, actor)
+    }
+
+    return actors, nil
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
