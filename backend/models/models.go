@@ -4,15 +4,15 @@ type Movie struct {
 	ID          int     `json:"id"`
 	Title       string  `json:"title"`
 	Description string  `json:"description"`
-	ReleaseDate int     `json:"release_date"`
+	ReleaseDate string  `json:"release_date"`
 	Genres      []Genre `json:"genres"`
 }
 
-type CreateMovieReq struct {
-	Title       string  `json:"title"`
-	Description string  `json:"description"`
-	ReleaseDate int     `json:"release_date"`
-	Genres      []Genre `json:"genres"`
+type PatchMovieReq struct {
+	Title       *string  `json:"title"`
+	Description *string  `json:"description"`
+	ReleaseDate *string	 `json:"release_date"`
+	Genres      []Genre  `json:"genres"`
 }
 
 type Genre struct {
@@ -30,7 +30,7 @@ type Actor struct {
 	BirthDate string `json:"birth_date"`
 }
 
-type CreateActorReq struct {
-	Name      string `json:"name"`
-	BirthDate string `json:"birth_date"`
+type PatchActorReq struct {
+	Name      *string `json:"name"`
+	BirthDate *string `json:"birth_date"`
 }
