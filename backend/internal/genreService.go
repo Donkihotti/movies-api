@@ -2,7 +2,8 @@ package internal
 
 import (
 	"context"
-
+	"log"
+	"errors"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 )
 
@@ -60,6 +61,11 @@ func (s *GenreService) DeleteGenre(ctx context.Context, id int) error {
 }
 
 func (s *GenreService) PutGenre(ctx context.Context, newGenre models.Genre, id int) error {
+
+	if newGenre.Genre == "" {
+		log.Println("Empty field in struct field not allowed")
+		return errors.New("Empty field in struct field not allowed")
+	}
 
 	err := s.repo.PutGenre(ctx, newGenre, id)
 	if err != nil {
