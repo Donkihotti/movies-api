@@ -2,9 +2,10 @@ package internal
 
 import (
 	"context"
+	"strings"
 	"database/sql"
-	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"log"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 )
 
 type MovieRepository struct {
@@ -70,15 +71,36 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 }
 
 
-func (r *MovieRepository) GetMovies() ([]models.Movie, error) {
+func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie, error) {
 
 	var movies []models.Movie
-	rows, err := r.db.Query(
-		`
+	var conditions []string
+	args := []any{}
+
+	query := `
 	SELECT id, title, description, release_date
-	FROM movies
-	`,
-	)
+	FROM movies m
+	`
+
+	if filters.GenreID != nil {
+		query += `JOIN movie_genres gm ON gm.movie_id = m.id`	
+		conditions = append(conditions, "gm.genre_id = ?")
+		args = append(args, *filters.GenreID)
+	}
+
+//	if filters.ActorID != nil {
+//		query += `
+//		JOIN movie_actors am ON am.movie_id = m.id
+//		`	
+//		conditions = append(conditions, "am.actor_id = ?")
+//		args = append(args, *filters.ActorID)
+//	}
+
+	if len(conditions) > 0 {
+		query += " WHERE " + strings.Join(conditions, " AND ")
+	}
+	
+	rows, err := r.db.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +117,6 @@ func (r *MovieRepository) GetMovies() ([]models.Movie, error) {
 		if err != nil {
 			return nil, err
 		}
-
 		movies = append(movies, movie)
 	}
 

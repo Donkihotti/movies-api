@@ -12,6 +12,7 @@ type MovieService struct {
 	repo *MovieRepository
 }
 
+
 func NewMovieService(repo *MovieRepository) *MovieService {
 	return &MovieService{
 		repo: repo,
@@ -19,8 +20,9 @@ func NewMovieService(repo *MovieRepository) *MovieService {
 }
 
 //GET ALL MOVIES
-func (s *MovieService) GetMovies() ([]models.Movie, error) {
-	movies, err := s.repo.GetMovies()
+func (s *MovieService) GetMovies(filters models.MovieFilters) ([]models.Movie, error) {
+
+	movies, err := s.repo.GetMovies(filters)
 	if err != nil {
 		return nil, err
 	}

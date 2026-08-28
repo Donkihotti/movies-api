@@ -34,3 +34,8 @@ type PatchActorReq struct {
 	Name      *string `json:"name"`
 	BirthDate *string `json:"birth_date"`
 }
+
+type MovieFilters struct {
+	ActorID	   *string
+	GenreID    *string
+}
