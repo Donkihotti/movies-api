@@ -26,6 +26,16 @@ func (s *GenreService) GetGenres(ctx context.Context) ([]models.Genre, error) {
 	return genres, nil
 }
 
+func (s *GenreService) GetGenre(ctx context.Context, id int) ([]models.Movie, error) {
+
+	genre, err := s.repo.GetGenre(ctx, id)
+	if err != nil {
+	return nil, err
+	}
+
+	return genre, nil
+}
+
 func (s *GenreService) PostGenre(ctx context.Context, req models.Genre) (models.Genre, error) {
 
 	genre := models.Genre{

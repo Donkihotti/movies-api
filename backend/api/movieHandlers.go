@@ -44,7 +44,6 @@ func (h *Handler) MovieHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(movie)
 }
 
-//POST MOVIE
 func (h *Handler) CreateMovie(w http.ResponseWriter, r *http.Request) {
 
     var req models.Movie
