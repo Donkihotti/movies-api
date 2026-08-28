@@ -31,9 +31,9 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 	`INSERT INTO movies (title, description, release_date)
 	VALUES (?, ?, ?)
 	`,
-	movie.Title,
-	movie.Description,
-	movie.ReleaseDate,
+	req.Title,
+	req.Description,
+	req.ReleaseDate,
 	)
 	if err != nil {
 	return models.Movie{}, err
@@ -44,7 +44,7 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 	return models.Movie{}, err 
 	}
 
-	movie.ID = int(id)
+	req.ID = int(id)
 	genreIds := req.Genres
 	
 	for _, genreId := range genreIds {
@@ -53,7 +53,7 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 		`INSERT INTO movie_genres (movie_id, genre_id)
 		VALUES (?, ?)
 		`,
-		movie.ID,
+		req.ID,
 		genreId,
 		)
 		if err != nil {
@@ -65,7 +65,7 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 	return models.Movie{}, err
 	}
 
-	return movie, nil
+	return req, nil
 }
 
 
