@@ -55,7 +55,6 @@ func (s *MovieService) GetMovieByID(id int) (models.Movie, error) {
 //POST MOVIE
 func (s *MovieService) PostMovie(ctx context.Context, req models.Movie) (models.Movie, error) {
 
-    //validate empty fields
     if req.Title == "" || req.Description == "" || req.ReleaseDate == "" {
         message := "cannot post movie with empty struct fields"
         log.Println(message)

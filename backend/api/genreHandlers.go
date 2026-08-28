@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-func (h *Handler) GenreHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GenresHandler(w http.ResponseWriter, r *http.Request) {
 
 	genre, err := h.GenreService.GetGenres(r.Context())
 	if err != nil {
@@ -20,6 +20,30 @@ func (h *Handler) GenreHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusAccepted)
 	json.NewEncoder(w).Encode(genre)
 }
+
+
+func (h *Handler) GenreHandler(w http.ResponseWriter, r *http.Request) {
+	
+	idString := r.PathValue("id")
+	id, err := strconv.Atoi(idString)	
+	if err != nil {
+	log.Println(err)
+	http.Error(w, "Bad Request", http.StatusBadRequest)
+	return 
+	}
+
+	genre, err := h.GenreService.GetGenre(r.Context(), id)
+	if err != nil {
+	log.Println(err)
+	http.Error(w, "Bad Request", http.StatusBadRequest)
+	return
+	}
+	
+	w.Header().Set("Content-type", "application/json")
+	w.WriteHeader(http.StatusAccepted)
+	json.NewEncoder(w).Encode(genre)
+}
+
 
 func (h *Handler) CreateGenre(w http.ResponseWriter, r *http.Request) {
 

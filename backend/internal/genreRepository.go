@@ -46,6 +46,34 @@ func (r *GenreRepository) GetGenres(ctx context.Context) ([]models.Genre, error)
 	return genres, nil
 }
 
+func (r *GenreRepository) GetGenre(ctx context.Context, id int) ([]models.Movie, error) {
+
+	var movies []models.Movie
+
+	query := `SELECT m.id, m.title, m.description, m.release_date
+	FROM movies AS m
+	JOIN movie_genres AS mg ON mg.movie_id = m.id
+	JOIN genres AS g ON g.id = mg.genre_id
+	WHERE mg.genre_id = ? 
+	`
+
+	rows, err := r.db.Query(query, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+	var movie models.Movie
+		if err := rows.Scan(&movie.ID, &movie.Title, &movie.Description, &movie.ReleaseDate); err != nil {
+		return nil, err
+		}
+	movies = append(movies, movie)
+	}
+
+	return movies, nil
+}
+
 func (r *GenreRepository) PostGenre(ctx context.Context, genre models.Genre) (models.Genre, error) {
 
 	res, err := r.db.ExecContext(
