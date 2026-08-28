@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"backend/errs"
 )
 
 //GET ALL ACTORS
@@ -19,6 +20,11 @@ func (h *Handler) GetActorsHandler(w http.ResponseWriter, r *http.Request) {
 	actors, err := h.ActorService.GetActors(name)
 	if err != nil {
 		fmt.Println("Server error", err)
+		//here we do something like: 
+		//errs.GlobalErrorHandler(err, w)
+		//this returns the statuscode based on the error type 
+		//does it do anything else?
+
 		http.Error(w, "Server error", http.StatusInternalServerError)
 		return
 	}

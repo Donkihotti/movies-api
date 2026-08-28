@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
+	"../errs"
 	"errors"
 	"time"
 )
@@ -20,6 +21,7 @@ func NewActorRepository(db *sql.DB) *ActorRepository {
 	}
 }
 
+
 // GET ALL ACTORS
 func (r *ActorRepository) GetActors(name string) ([]models.Actor, error) {
     var actors []models.Actor
@@ -30,6 +32,11 @@ func (r *ActorRepository) GetActors(name string) ([]models.Actor, error) {
         query := "SELECT id, name, birth_date FROM actors"
         rows, err = r.db.Query(query)
         if err != nil {
+			
+			if errors.Is(sql.ErrNoRows) {
+				err = errs.ErrNotFound
+			}
+
             log.Println(err)
             return actors, err
         }
