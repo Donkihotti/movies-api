@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS movies (
     title TEXT NOT NULL,    
     description TEXT, 
     release_date INTEGER, 
+
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

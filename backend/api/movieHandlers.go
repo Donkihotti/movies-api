@@ -11,7 +11,9 @@ import (
 //GET ALL MOVIES
 func (h *Handler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 
-	movies, err := h.MovieService.GetMovies()
+	year := r.URL.Query().Get("releaseYear")
+
+	movies, err := h.MovieService.GetMovies(year)
 	if err != nil {
 		log.Println("Server error", err)
 		http.Error(w, "Server error", http.StatusInternalServerError)

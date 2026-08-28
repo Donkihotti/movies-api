@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"log"
+	"strconv"
+	"fmt"
 )
 
 type MovieRepository struct {
@@ -42,15 +44,23 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 }
 
 //GET ALL MOVIES
-func (r *MovieRepository) GetMovies() ([]models.Movie, error) {
+func (r *MovieRepository) GetMovies(year int) ([]models.Movie, error) {
 
 	var movies []models.Movie
-	rows, err := r.db.Query(
-		`
-	SELECT id, title, description, release_date
-	FROM movies
-	`,
-	)
+	var err error
+	var rows *sql.Rows
+	var yearString = fmt.Sprintf("%%%v%%",strconv.Itoa(year))
+
+	//get all movies if the year is less than 1888
+	//first movie ever was made in 1888
+	if year < 1888 {
+		query := "SELECT id, title, description, release_date FROM movies" 
+		rows, err = r.db.Query(query)	
+	} else {
+		query := "SELECT id, title, description, release_date FROM movies WHERE release_date LIKE ?"
+		rows, err = r.db.Query(query, yearString)
+	}		
+
 	if err != nil {
 		return nil, err
 	}

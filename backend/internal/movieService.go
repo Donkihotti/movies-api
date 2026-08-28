@@ -6,6 +6,7 @@ import (
 	"time"
 	"errors"
 	"log"
+	"strconv"
 )
 
 type MovieService struct {
@@ -18,11 +19,26 @@ func NewMovieService(repo *MovieRepository) *MovieService {
 	}
 }
 
+var timeLayout = "2006-01-02"
+
+
 //GET ALL MOVIES
-func (s *MovieService) GetMovies() ([]models.Movie, error) {
-	movies, err := s.repo.GetMovies()
-	if err != nil {
-		return nil, err
+func (s *MovieService) GetMovies(releaseYear string) ([]models.Movie, error) {
+
+	year := 0 
+	var err error
+
+	if releaseYear != "" {
+		year, err = strconv.Atoi(releaseYear) 
+		if err != nil {
+			log.Println("invalid release year", year)
+			return []models.Movie{}, err
+		}
+	}
+
+	movies, err1 := s.repo.GetMovies(year)
+	if err1 != nil {
+		return nil, err1
 	}
 	return movies, nil
 }
@@ -46,7 +62,6 @@ func (s *MovieService) PostMovie(ctx context.Context, req models.Movie) (models.
         return models.Movie{}, errors.New(message)
     }
 
-    timeLayout := "2006-01-02"
     releaseDate := req.ReleaseDate
     _, err := time.Parse(timeLayout, releaseDate)
     if err != nil {
@@ -67,12 +82,11 @@ func (s *MovieService) PostMovie(ctx context.Context, req models.Movie) (models.
 func (s *MovieService) PatchMovie(ctx context.Context, req models.PatchMovieReq, id int) error {
 
     if req.Title == nil && req.Description == nil && req.ReleaseDate == nil {
-        message := "cannot accept empty struct fields in patch movie method"
+        message := "cannot accept empty struct in patch movie method"
         log.Println(message)
         return errors.New(message)
     }
 
-    timeLayout := "2006-01-02"
     releaseDate := *req.ReleaseDate
     _, err := time.Parse(timeLayout, releaseDate)
     if err != nil {
