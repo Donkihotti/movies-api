@@ -20,3 +20,5 @@ Toinen linkki, tama on paikka mista voi tarkistaa sql quirks, miten kielta kayte
 https://www.geeksforgeeks.org/node-js/rest-api-introduction/
 
 
+This is a good link to study when we want to get values from junction tables. 
+https://go.dev/doc/database/execute-transactions
