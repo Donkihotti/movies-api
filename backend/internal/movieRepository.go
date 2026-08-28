@@ -46,6 +46,7 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 
 	req.ID = int(id)
 	genreIds := req.Genres
+
 	
 	for _, genreId := range genreIds {
 		_, err := tx.ExecContext(

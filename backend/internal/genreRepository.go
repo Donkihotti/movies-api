@@ -50,7 +50,7 @@ func (r *GenreRepository) GetGenre(ctx context.Context, id int) ([]models.Movie,
 
 	var movies []models.Movie
 
-	query := `SELECT m.* 
+	query := `SELECT m.id, m.title, m.description, m.release_date
 	FROM movies AS m
 	JOIN movie_genres AS mg ON mg.movie_id = m.id
 	JOIN genres AS g ON g.id = mg.genre_id
@@ -65,7 +65,7 @@ func (r *GenreRepository) GetGenre(ctx context.Context, id int) ([]models.Movie,
 
 	for rows.Next() {
 	var movie models.Movie
-		if err := rows.Scan(&movie.ID, &movie.Title, &movie.Description); err != nil {
+		if err := rows.Scan(&movie.ID, &movie.Title, &movie.Description, &movie.ReleaseDate); err != nil {
 		return nil, err
 		}
 	movies = append(movies, movie)
