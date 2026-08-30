@@ -1,15 +1,12 @@
 package api
 
 import (
-	"database/sql"
 	"encoding/json"
-	"errors"
-	"fmt"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"log"
 	"net/http"
 	"strconv"
-	"backend/errs"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 )
 
 //GET ALL ACTORS
@@ -19,17 +16,12 @@ func (h *Handler) GetActorsHandler(w http.ResponseWriter, r *http.Request) {
 	
 	actors, err := h.ActorService.GetActors(name)
 	if err != nil {
-		fmt.Println("Server error", err)
-		//here we do something like: 
-		//errs.GlobalErrorHandler(err, w)
-		//this returns the statuscode based on the error type 
-		//does it do anything else?
-
-		http.Error(w, "Server error", http.StatusInternalServerError)
+		log.Println(err)
+		WriteErrorStatus(w, err)
 		return
 	}
-
-	w.WriteHeader(http.StatusAccepted)
+    w.Header().Set("Content-Type", "application/json")
+	WriteStatus(w, r.Method)
 	json.NewEncoder(w).Encode(actors)
 }
 
@@ -39,19 +31,20 @@ func (h *Handler) GetActorHandler(w http.ResponseWriter, r *http.Request) {
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)
 	if err != nil {
-		log.Printf("Invalid id: %v\n", idString)
-		http.Error(w, "Invalid id", http.StatusBadRequest)
+		log.Println("invalid id: ", id)
+		WriteErrorStatus(w, errs.BadRequest)
 		return
 	}
 
 	actor, err := h.ActorService.GetActorByID(id)
 	if err != nil {
-		log.Println("Server error", err)
-		http.Error(w, "Server error", http.StatusInternalServerError)
+		log.Println(err)
+		WriteErrorStatus(w, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusAccepted)
+    w.Header().Set("Content-Type", "application/json")
+	WriteStatus(w, r.Method)
 	json.NewEncoder(w).Encode(actor)
 }
 
@@ -63,17 +56,13 @@ func (h *Handler) GetActorsByNameHandler(w http.ResponseWriter, r *http.Request)
 
     actors, err := h.ActorService.GetActorsByName(ctx, name) 
     if err != nil {
-        if errors.Is(err, sql.ErrNoRows) {
-            http.Error(w, "actors not found by this name", http.StatusNotFound)
-            log.Println(err)
-            return
-        }
-        log.Println(err)
-        http.Error(w, "error occured when trying to find actors by name", http.StatusInternalServerError)
+		log.Println(err)
+		WriteErrorStatus(w, err)
         return
     }
         
-    w.WriteHeader(http.StatusAccepted)
+    w.Header().Set("Content-Type", "application/json")
+	WriteStatus(w, r.Method)
     json.NewEncoder(w).Encode(actors)
 }
 
@@ -85,16 +74,12 @@ func (h *Handler) GetActorsByBirthdateHandler(w http.ResponseWriter, r *http.Req
 
     actors, err := h.ActorService.GetActorsByBirthdate(ctx, date)
     if err != nil {
-        if errors.Is(err, sql.ErrNoRows) {
-            http.Error(w, "no actors have this birthdate", http.StatusBadRequest)
-            log.Println(err)
-            return
-        }
-        log.Println(err)
-        http.Error(w, "error", http.StatusInternalServerError)
+		log.Println(err)
+		WriteErrorStatus(w, err)
+		return
     }
-
-    w.WriteHeader(http.StatusAccepted)
+    w.Header().Set("Content-Type", "application/json")
+	WriteStatus(w, r.Method)
     json.NewEncoder(w).Encode(actors)
 }
 
@@ -107,22 +92,21 @@ func (h *Handler) PostActor(w http.ResponseWriter, r *http.Request) {
     decoder.DisallowUnknownFields()
 
     if err := decoder.Decode(&req); err != nil {
-        http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Println(err)
+		WriteErrorStatus(w, errs.BadRequest)
         return
     }
 
     actor, err := h.ActorService.PostActor(r.Context(), req)
     if err != nil {
-        http.Error(w, "Error posting actor", http.StatusBadRequest)
+		log.Println(err)
+		WriteErrorStatus(w, errs.BadRequest)
         return
     }
-    w.Header().Set("Content-type", "application/json")
-    w.WriteHeader(http.StatusAccepted)
+    w.Header().Set("Content-Type", "application/json")
+	WriteStatus(w, r.Method)
     json.NewEncoder(w).Encode(actor)
 }
-
-
-
 
 //DELETE AN ACTOR
 func (h *Handler) DeleteActorHandler(w http.ResponseWriter, r *http.Request) {
@@ -130,18 +114,18 @@ func (h *Handler) DeleteActorHandler(w http.ResponseWriter, r *http.Request) {
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)
 	if err != nil {
-		http.Error(w, "invalid id", http.StatusBadRequest)
 		log.Println(err)
+		WriteErrorStatus(w, errs.BadRequest)
 		return
 	}
 	err = h.ActorService.DeleteActor(r.Context(), id)
 	if err != nil {
-		http.Error(w, "error deleting actor", http.StatusBadRequest)
 		log.Println(err)
+		WriteErrorStatus(w, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	WriteStatus(w, r.Method)
 }
 
 //PATCH AN ACTOR
@@ -150,7 +134,8 @@ func (h *Handler) PatchActorHandler(w http.ResponseWriter, r *http.Request) {
     idString := r.PathValue("id")
     id, err := strconv.Atoi(idString)
     if err != nil {
-        http.Error(w, "Invalid ID", http.StatusBadRequest)
+		log.Println(err)
+		WriteErrorStatus(w, errs.BadRequest)
         return
     }
 
@@ -161,22 +146,16 @@ func (h *Handler) PatchActorHandler(w http.ResponseWriter, r *http.Request) {
 
     if err := decoder.Decode(&actor); err != nil {
         log.Println(err)
-        http.Error(w, "error", http.StatusBadRequest)
+		WriteErrorStatus(w, err)
         return
     }
 
     err = h.ActorService.PatchActor(r.Context(), actor, id)
     if err != nil {
-        if errors.Is(err, sql.ErrNoRows) {
-            http.Error(w, "actor not found", http.StatusNotFound)
-            log.Println(err)
-            return
-        }
         log.Println(err)
-        http.Error(w, "error", http.StatusInternalServerError)
+		WriteErrorStatus(w, err)
         return
     }
-
-    w.WriteHeader(http.StatusNoContent)
+	WriteStatus(w, r.Method)
 }
 

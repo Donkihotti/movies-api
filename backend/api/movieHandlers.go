@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"log"
 	"net/http"
 	"strconv"
@@ -15,12 +16,13 @@ func (h *Handler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 
 	movies, err := h.MovieService.GetMovies(year)
 	if err != nil {
-		log.Println("Server error", err)
-		http.Error(w, "Server error", http.StatusInternalServerError)
+		log.Println(err)
+		WriteErrorStatus(w, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusAccepted)
+	w.Header().Set("Content-Type", "application/json")
+	WriteStatus(w, r.Method)
 	json.NewEncoder(w).Encode(movies)
 }
 
@@ -31,18 +33,19 @@ func (h *Handler) MovieHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(idString)
 	if err != nil {
 		log.Printf("Invalid id: %v\n", idString)
-		http.Error(w, "Invalid id", http.StatusBadRequest)
+		WriteErrorStatus(w, errs.BadRequest)
 		return
 	}
 
 	movie, err := h.MovieService.GetMovieByID(id)
 	if err != nil {
-		log.Println("Server error", err)
-		http.Error(w, "invalid id", http.StatusNotFound)
+		log.Println(err)
+		WriteErrorStatus(w, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusAccepted)
+	w.Header().Set("Content-Type", "application/json")
+	WriteStatus(w, r.Method)
 	json.NewEncoder(w).Encode(movie)
 }
 
@@ -53,18 +56,19 @@ func (h *Handler) CreateMovie(w http.ResponseWriter, r *http.Request) {
     decoder.DisallowUnknownFields()
 
     if err := decoder.Decode(&req); err != nil {
-        http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Println(err)
+		WriteErrorStatus(w, errs.BadRequest)
         return
     }   
 
     movie, err := h.MovieService.PostMovie(r.Context(), req)
     if err != nil {
-        http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Println(err)
+		WriteErrorStatus(w, errs.BadRequest)
         return
     }   
-    w.Header().Set("Content-type", "application/json")
-
-    w.WriteHeader(http.StatusAccepted)
+    w.Header().Set("Content-Type", "application/json")
+	WriteStatus(w, r.Method)
     json.NewEncoder(w).Encode(movie)
 }
 
@@ -75,7 +79,7 @@ func (h *Handler) PatchMovie(w http.ResponseWriter, r *http.Request) {
     id, err := strconv.Atoi(idString)
     if err != nil {
         log.Println(err)
-        http.Error(w, err.Error(), http.StatusBadRequest)
+		WriteErrorStatus(w, errs.BadRequest)
         return
     }   
 
@@ -87,10 +91,10 @@ func (h *Handler) PatchMovie(w http.ResponseWriter, r *http.Request) {
 
     if err := h.MovieService.PatchMovie(r.Context(), req, id); err != nil {
         log.Println(err)
-        http.Error(w, "Internal Server error", http.StatusInternalServerError)
+		WriteErrorStatus(w, err)
         return
     }
-    w.WriteHeader(http.StatusNoContent)
+	WriteStatus(w, r.Method)
 }
 
 //DELETE MOVIE
@@ -100,15 +104,16 @@ func (h *Handler) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(idString) 
 	if err != nil {
 		log.Println(err)
-		http.Error(w, "Invalid id", http.StatusBadRequest)
+		WriteErrorStatus(w, errs.BadRequest)
 		return
 	}
 
 	if err := h.MovieService.DeleteMovie(r.Context(), id); err != nil {
-		http.Error(w, "Bad Request", http.StatusBadRequest)
+		log.Println(err)
+		WriteErrorStatus(w, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	WriteStatus(w, r.Method)
 }
 

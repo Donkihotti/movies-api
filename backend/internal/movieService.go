@@ -3,9 +3,8 @@ package internal
 import (
 	"context"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"time"
-	"errors"
-	"log"
 	"strconv"
 )
 
@@ -21,7 +20,6 @@ func NewMovieService(repo *MovieRepository) *MovieService {
 
 var timeLayout = "2006-01-02"
 
-
 //GET ALL MOVIES
 func (s *MovieService) GetMovies(releaseYear string) ([]models.Movie, error) {
 
@@ -31,8 +29,7 @@ func (s *MovieService) GetMovies(releaseYear string) ([]models.Movie, error) {
 	if releaseYear != "" {
 		year, err = strconv.Atoi(releaseYear) 
 		if err != nil {
-			log.Println("invalid release year", year)
-			return []models.Movie{}, err
+			return []models.Movie{}, errs.BadRequest
 		}
 	}
 
@@ -56,16 +53,13 @@ func (s *MovieService) GetMovieByID(id int) (models.Movie, error) {
 func (s *MovieService) PostMovie(ctx context.Context, req models.Movie) (models.Movie, error) {
 
     if req.Title == "" || req.Description == "" || req.ReleaseDate == "" {
-        message := "cannot post movie with empty struct fields"
-        log.Println(message)
-        return models.Movie{}, errors.New(message)
+        return models.Movie{}, errs.BadRequest 
     }
 
     releaseDate := req.ReleaseDate
     _, err := time.Parse(timeLayout, releaseDate)
     if err != nil {
-        log.Println("invalid release date: ", releaseDate)
-        return models.Movie{}, err
+        return models.Movie{}, errs.BadRequest
     }
 
     movie, err := s.repo.PostMovie(ctx, req)
@@ -81,19 +75,18 @@ func (s *MovieService) PostMovie(ctx context.Context, req models.Movie) (models.
 func (s *MovieService) PatchMovie(ctx context.Context, req models.PatchMovieReq, id int) error {
 
     if req.Title == nil && req.Description == nil && req.ReleaseDate == nil {
-        message := "cannot accept empty struct in patch movie method"
-        log.Println(message)
-        return errors.New(message)
+        return errs.BadRequest 
     }
 
-    releaseDate := *req.ReleaseDate
-    _, err := time.Parse(timeLayout, releaseDate)
-    if err != nil {
-        log.Println("invalid release date: ", releaseDate)
-        return err
-    }
+	if req.ReleaseDate != nil {
+		releaseDate := *req.ReleaseDate
+		_, err := time.Parse(timeLayout, releaseDate)
+		if err != nil {
+			return errs.BadRequest
+		}
+	}
 
-    err = s.repo.PatchMovie(ctx, req, id)
+    err := s.repo.PatchMovie(ctx, req, id)
     if err != nil {
         return err
     }

@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"log"
 	"strconv"
 	"fmt"
+	"errors"
 )
 
 type MovieRepository struct {
@@ -23,7 +25,7 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return models.Movie{}, err
+		return models.Movie{}, errs.ServerError
 	}
 
 	defer tx.Rollback()
@@ -38,7 +40,7 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 	req.ReleaseDate,
 	)
 	if err != nil {
-	return models.Movie{}, err
+	return models.Movie{}, errs.ServerError
 	}
 
 	id, err := res.LastInsertId()
@@ -60,12 +62,12 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 		genreId,
 		)
 		if err != nil {
-		return models.Movie{}, err
+		return models.Movie{}, errs.ServerError
 		}
 	}
 
 	if err := tx.Commit(); err != nil {
-	return models.Movie{}, err
+	return models.Movie{}, errs.ServerError
 	}
 
 	return req, nil
@@ -74,7 +76,7 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 //GET ALL MOVIES
 func (r *MovieRepository) GetMovies(year int) ([]models.Movie, error) {
 
-	var movies []models.Movie
+	movies := []models.Movie{}
 	var err error
 	var rows *sql.Rows
 	var yearString = fmt.Sprintf("%%%v%%",strconv.Itoa(year))
@@ -90,7 +92,7 @@ func (r *MovieRepository) GetMovies(year int) ([]models.Movie, error) {
 	}		
 
 	if err != nil {
-		return nil, err
+		return nil, errs.ServerError
 	}
 	defer rows.Close()
 
@@ -103,7 +105,7 @@ func (r *MovieRepository) GetMovies(year int) ([]models.Movie, error) {
 			&movie.ReleaseDate,
 		)
 		if err != nil {
-			return nil, err
+			return nil, errs.ServerError
 		}
 
 		movies = append(movies, movie)
@@ -128,7 +130,10 @@ func (r *MovieRepository) GetMovieByID(id int) (models.Movie, error) {
 		&movie.ReleaseDate,
 	)
 	if err != nil {
-		return models.Movie{}, err
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.Movie{}, errs.NotFound
+		}
+		return models.Movie{}, errs.ServerError
 	}
 	return movie, nil
 }
@@ -136,26 +141,27 @@ func (r *MovieRepository) GetMovieByID(id int) (models.Movie, error) {
 //PATCH MOVIE
 func (r *MovieRepository) PatchMovie(ctx context.Context, movie models.PatchMovieReq, id int) error {
 
+	
     res, err := r.db.ExecContext(
         ctx,
         `
     UPDATE movies SET title = COALESCE(?, title), description = COALESCE(?, description), release_date = COALESCE(?, release_date) WHERE id = ?
     `,
-        *movie.Title,
-        *movie.Description,
-        *movie.ReleaseDate,
+        movie.Title,		//voidaan antaa pointerit sellaisenaan, sql osaa tulkita niitä itse
+        movie.Description,
+        movie.ReleaseDate,
         id,
     )
     if err != nil {
-        return err
+        return errs.ServerError
     }
 
     rows, err := res.RowsAffected()
     if err != nil {
-        return err
+        return errs.ServerError
     }
     if rows == 0 {
-        return sql.ErrNoRows
+        return errs.NotFound 
     }
     return nil
 }
@@ -167,18 +173,17 @@ func (r *MovieRepository) DeleteMovie(ctx context.Context, id int) error {
 
     res, err := r.db.ExecContext(ctx, query, id)
     if err != nil {
-        return err
+        return errs.ServerError
     }
 
     rows, err := res.RowsAffected()
     if err != nil {
         log.Println("Error fetching movies")
-        return err
+        return errs.ServerError
     }
 
     if rows == 0 {
-        log.Println("No movies with the id provided")
-        return sql.ErrNoRows
+        return errs.NotFound 
     }
 
     return nil

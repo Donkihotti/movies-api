@@ -1,10 +1,9 @@
 package api
 
 import (
-	"database/sql"
 	"encoding/json"
-	"errors"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"log"
 	"net/http"
 	"strconv"
@@ -14,10 +13,12 @@ func (h *Handler) GenresHandler(w http.ResponseWriter, r *http.Request) {
 
 	genre, err := h.GenreService.GetGenres(r.Context())
 	if err != nil {
-		http.Error(w, "Internal Server error", http.StatusInternalServerError)
+		log.Println(err)
+		WriteErrorStatus(w, err)
+		return
 	}
-
-	w.WriteHeader(http.StatusAccepted)
+	w.Header().Set("Content-Type", "application/json")
+	WriteStatus(w, r.Method)
 	json.NewEncoder(w).Encode(genre)
 }
 
@@ -28,56 +29,54 @@ func (h *Handler) GenreHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(idString)	
 	if err != nil {
 	log.Println(err)
-	http.Error(w, "Bad Request", http.StatusBadRequest)
+	WriteErrorStatus(w, errs.BadRequest)
 	return 
 	}
 
 	genre, err := h.GenreService.GetGenre(r.Context(), id)
 	if err != nil {
-	log.Println(err)
-	http.Error(w, "Bad Request", http.StatusBadRequest)
-	return
+		log.Println(err)
+		WriteErrorStatus(w, err)
+		return
 	}
 	
-	w.Header().Set("Content-type", "application/json")
-	w.WriteHeader(http.StatusAccepted)
+	w.Header().Set("Content-Type", "application/json")
+	WriteStatus(w, r.Method)
 	json.NewEncoder(w).Encode(genre)
 }
 
 
 func (h *Handler) CreateGenre(w http.ResponseWriter, r *http.Request) {
 
-	if r.Method != http.MethodPost {
-		http.Error(w, "Wrong method", http.StatusMethodNotAllowed)
-	}
-
 	var req models.Genre
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&req); err != nil {
-		http.Error(w, "Bad request", http.StatusBadRequest)
+		log.Println(err)
+		WriteErrorStatus(w, errs.BadRequest)
 		return
 	}
 
 	genre, err := h.GenreService.PostGenre(r.Context(), req)
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "Server error", http.StatusInternalServerError)
+		log.Println(err)	
+		WriteErrorStatus(w, err)
 		return
 	}
 
-	w.Header().Set("Content-type", "application-json")
-	w.WriteHeader(http.StatusAccepted)
+	w.Header().Set("Content-Type", "application/json")
+	WriteStatus(w, r.Method)
 	json.NewEncoder(w).Encode(genre)
 
 }
 
-func (h *Handler) PutGenre(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) PatchGenre(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)
 	if err != nil {
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		log.Println(err)
+		WriteErrorStatus(w, errs.BadRequest)
 		return
 	}
 
@@ -87,22 +86,18 @@ func (h *Handler) PutGenre(w http.ResponseWriter, r *http.Request) {
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&newGenre); err != nil {
 		log.Println(err)
-		http.Error(w, "Bad Request", http.StatusBadRequest)
+		WriteErrorStatus(w, errs.BadRequest)
 		return
 	}
 
-	err = h.GenreService.PutGenre(r.Context(), newGenre, id)
+	err = h.GenreService.PatchGenre(r.Context(), newGenre, id)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			log.Println(err)
-			http.Error(w, "Genre not found", http.StatusNotFound)
-			return
-		}
-
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println(err)
+		WriteErrorStatus(w, err)
 		return
 	}
-	w.WriteHeader(http.StatusNoContent)
+
+	WriteStatus(w, r.Method)
 }
 
 func (h *Handler) DeleteGenre(w http.ResponseWriter, r *http.Request) {
@@ -111,15 +106,16 @@ func (h *Handler) DeleteGenre(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(idString)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, "Invalid id", http.StatusBadRequest)
+		WriteErrorStatus(w, errs.BadRequest)
 		return
 	}
 
 	err = h.GenreService.DeleteGenre(r.Context(), id)
 	if err != nil {
-		http.Error(w, "Bad request", http.StatusBadRequest)
+		log.Println(err)
+		WriteErrorStatus(w, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	WriteStatus(w, r.Method)
 }

@@ -3,7 +3,7 @@ package internal
 import (
 	"context"
 	"database/sql"
-
+	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 )
 
@@ -19,7 +19,7 @@ func NewGenreRepository(db *sql.DB) *GenreRepository {
 
 func (r *GenreRepository) GetGenres(ctx context.Context) ([]models.Genre, error) {
 
-	var genres []models.Genre
+	genres := []models.Genre{}
 	rows, err := r.db.Query(
 		`
 	SELECT id, genre_name		
@@ -27,7 +27,7 @@ func (r *GenreRepository) GetGenres(ctx context.Context) ([]models.Genre, error)
 	`,
 	)
 	if err != nil {
-		return nil, err
+		return nil, errs.ServerError
 	}
 	defer rows.Close()
 
@@ -38,7 +38,7 @@ func (r *GenreRepository) GetGenres(ctx context.Context) ([]models.Genre, error)
 			&genre.Genre,
 		)
 		if err != nil {
-			return nil, err
+			return nil, errs.ServerError
 		}
 		genres = append(genres, genre)
 	}
@@ -48,7 +48,7 @@ func (r *GenreRepository) GetGenres(ctx context.Context) ([]models.Genre, error)
 
 func (r *GenreRepository) GetGenre(ctx context.Context, id int) ([]models.Movie, error) {
 
-	var movies []models.Movie
+	movies := []models.Movie{}
 
 	query := `SELECT m.id, m.title, m.description, m.release_date
 	FROM movies AS m
@@ -59,14 +59,14 @@ func (r *GenreRepository) GetGenre(ctx context.Context, id int) ([]models.Movie,
 
 	rows, err := r.db.Query(query, id)
 	if err != nil {
-		return nil, err
+		return nil, errs.ServerError
 	}
 	defer rows.Close()
 
 	for rows.Next() {
 	var movie models.Movie
 		if err := rows.Scan(&movie.ID, &movie.Title, &movie.Description, &movie.ReleaseDate); err != nil {
-		return nil, err
+		return nil, errs.ServerError
 		}
 	movies = append(movies, movie)
 	}
@@ -84,11 +84,11 @@ func (r *GenreRepository) PostGenre(ctx context.Context, genre models.Genre) (mo
 		genre.Genre,
 	)
 	if err != nil {
-		return models.Genre{}, err
+		return models.Genre{}, errs.ServerError
 	}
 	id, err := res.LastInsertId()
 	if err != nil {
-		return models.Genre{}, err
+		return models.Genre{}, errs.ServerError
 	}
 	genre.ID = int(id)
 	return genre, nil
@@ -102,20 +102,20 @@ func (r *GenreRepository) DeleteGenre(ctx context.Context, id int) error {
 		id,
 	)
 	if err != nil {
-		return err
+		return errs.ServerError
 	}
 	rows, err := res.RowsAffected()
 	if err != nil {
-		return err
+		return errs.ServerError
 	}
 
 	if rows == 0 {
-		return sql.ErrNoRows
+		return errs.NotFound 
 	}
 	return nil
 }
 
-func (r *GenreRepository) PutGenre(ctx context.Context, newGenre models.Genre, id int) error {
+func (r *GenreRepository) PatchGenre(ctx context.Context, newGenre models.Genre, id int) error {
 
 	res, err := r.db.ExecContext(
 		ctx,
@@ -124,15 +124,15 @@ func (r *GenreRepository) PutGenre(ctx context.Context, newGenre models.Genre, i
 		id,
 	)
 	if err != nil {
-		return err
+		return errs.ServerError
 	}
 
 	rows, err := res.RowsAffected()
 	if err != nil {
-		return err
+		return errs.ServerError
 	}
 	if rows == 0 {
-		return sql.ErrNoRows
+		return errs.NotFound 
 	}
 
 	return nil

@@ -5,10 +5,9 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
-	"../errs"
 	"errors"
-	"time"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 )
 
 type ActorRepository struct {
@@ -24,7 +23,8 @@ func NewActorRepository(db *sql.DB) *ActorRepository {
 
 // GET ALL ACTORS
 func (r *ActorRepository) GetActors(name string) ([]models.Actor, error) {
-    var actors []models.Actor
+
+    actors := []models.Actor{}
     var rows *sql.Rows
     var err error
 
@@ -32,21 +32,14 @@ func (r *ActorRepository) GetActors(name string) ([]models.Actor, error) {
         query := "SELECT id, name, birth_date FROM actors"
         rows, err = r.db.Query(query)
         if err != nil {
-			
-			if errors.Is(sql.ErrNoRows) {
-				err = errs.ErrNotFound
-			}
-
-            log.Println(err)
-            return actors, err
+            return actors, errs.ServerError
         }
     } else {
         name = fmt.Sprintf("%%%s%%", name)
         query := "SELECT id, name, birth_date FROM actors WHERE name LIKE ?" 
         rows, err = r.db.Query(query, name)
         if err != nil {
-            log.Println(err)
-            return actors, err
+            return actors, errs.ServerError
         }
     }
 
@@ -60,7 +53,7 @@ func (r *ActorRepository) GetActors(name string) ([]models.Actor, error) {
             &actor.BirthDate,
         )
         if err != nil {
-            return nil, err
+            return nil, errs.ServerError
         }
         actors = append(actors, actor)
     }
@@ -68,7 +61,7 @@ func (r *ActorRepository) GetActors(name string) ([]models.Actor, error) {
     return actors, nil
 }
 
-// GET AN INDIVIDUAL ACTOR
+//get actor by id
 func (r *ActorRepository) GetActorByID(id int) (models.Actor, error) {
 	var actor models.Actor
 
@@ -82,7 +75,10 @@ func (r *ActorRepository) GetActorByID(id int) (models.Actor, error) {
 		&actor.BirthDate,
 	)
 	if err != nil {
-		return models.Actor{}, err
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.Actor{}, errs.NotFound
+		}
+		return models.Actor{}, errs.ServerError
 	}
 
 	return actor, nil
@@ -90,23 +86,6 @@ func (r *ActorRepository) GetActorByID(id int) (models.Actor, error) {
 
 //POST AN ACTOR
 func (r *ActorRepository) PostActor(ctx context.Context, req models.Actor) (models.Actor, error) {
-
-	// res is an sql.Result, an interface that has a method such as the
-	// res.LastInsertId() method.
-
-    if req.Name == "" || req.BirthDate == "" {
-        message := "cannot post actor with empty struct fields"
-        log.Println(message)
-        return models.Actor{}, errors.New(message)
-    }   
-
-    timeLayout := "2006-01-02"
-    birthdate := req.BirthDate
-    _, err := time.Parse(timeLayout, birthdate)
-    if err != nil {
-        log.Println("invalid birthdate: ", birthdate)
-        return models.Actor{}, err 
-    }   	
 
 	res, err := r.db.ExecContext(
 		ctx,
@@ -116,12 +95,12 @@ func (r *ActorRepository) PostActor(ctx context.Context, req models.Actor) (mode
 	)
 
 	if err != nil {
-		return models.Actor{}, err
+		return models.Actor{}, errs.ServerError 
 	}
 
 	id, err := res.LastInsertId()
 	if err != nil {
-		return models.Actor{}, err
+		return models.Actor{}, errs.ServerError
 	}
 
 	req.ID = int(id)
@@ -136,17 +115,16 @@ func (r *ActorRepository) DeleteActor(ctx context.Context, id int) error {
 
 	res, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
-		return err
+		return errs.ServerError
 	}
 
 	rows, err := res.RowsAffected()
 	if err != nil {
-		fmt.Println(err)
-		return err
+		return errs.ServerError 
 	}
 
 	if rows == 0 {
-		return sql.ErrNoRows
+		return errs.NotFound
 	}
 
 	return nil
@@ -158,17 +136,15 @@ func (r *ActorRepository) PatchActor(ctx context.Context, req models.PatchActorR
     query := `UPDATE actors SET name = COALESCE(?, name), birth_date = COALESCE(?, birth_date) WHERE id = ?`
     row, err := r.db.ExecContext(ctx, query, req.Name, req.BirthDate, id)
     if err != nil {
-        fmt.Println(err)
-        return err
+        return errs.ServerError 
     }
     rows, err := row.RowsAffected()
     if err != nil {
-        fmt.Println(err)
-        return err
+        return errs.ServerError 
     }
 
     if rows == 0 {
-        return sql.ErrNoRows
+        return errs.NotFound 
     }
     return nil
 }
@@ -176,7 +152,7 @@ func (r *ActorRepository) PatchActor(ctx context.Context, req models.PatchActorR
 //GET ACTORS BY NAME
 func (r *ActorRepository) GetActorsByName(ctx context.Context, name string) ([]models.Actor, error) {
 
-    var actors []models.Actor
+    actors := []models.Actor{}
 
     name = fmt.Sprintf("%%%s%%", name)
 
@@ -184,8 +160,7 @@ func (r *ActorRepository) GetActorsByName(ctx context.Context, name string) ([]m
 
     rows, err := r.db.QueryContext(ctx, query, name)
     if err != nil {
-        log.Println(err)
-        return actors, err
+        return actors, errs.ServerError 
     }
     defer rows.Close()
 
@@ -197,8 +172,7 @@ func (r *ActorRepository) GetActorsByName(ctx context.Context, name string) ([]m
             &actor.BirthDate,
         )
         if err != nil {
-            log.Println(err)
-            return []models.Actor{}, err
+            return []models.Actor{}, errs.ServerError 
         }
         actors = append(actors, actor)
     }
@@ -210,14 +184,13 @@ func (r *ActorRepository) GetActorsByName(ctx context.Context, name string) ([]m
 //GET ACTORS BY BIRTHDATE
 func (r *ActorRepository) GetActorsByBirthdate(ctx context.Context, birthdate string) ([]models.Actor, error) {
 
-    var actors []models.Actor
+    actors := []models.Actor{}
 
     query := `SELECT id, name, birth_date FROM actors WHERE birth_date = ?`
 
     rows, err := r.db.QueryContext(ctx, query, birthdate)
     if err != nil {
-        log.Println(err)
-        return []models.Actor{}, err
+        return []models.Actor{}, errs.ServerError
     }
 
     for rows.Next() {
@@ -230,7 +203,7 @@ func (r *ActorRepository) GetActorsByBirthdate(ctx context.Context, birthdate st
         )
         if err != nil {
             log.Println(err)
-                return []models.Actor{}, err
+                return []models.Actor{}, errs.ServerError
         }
         actors = append(actors, actor)
     }
@@ -238,18 +211,5 @@ func (r *ActorRepository) GetActorsByBirthdate(ctx context.Context, birthdate st
     return actors, nil
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

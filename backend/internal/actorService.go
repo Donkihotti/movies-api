@@ -3,9 +3,8 @@ package internal
 import (
 	"context"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
-	"log"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"time"
-	"errors"
 )
 
 type ActorService struct {
@@ -40,7 +39,6 @@ func (as *ActorService) GetActorByID(id int) (models.Actor, error) {
 func (as *ActorService) GetActorsByName(ctx context.Context, name string) ([]models.Actor, error) {
     actors, err := as.repo.GetActorsByName(ctx, name)
     if err != nil {
-        log.Println(err)
         return []models.Actor{}, err
     }
     return actors, nil
@@ -52,13 +50,11 @@ func (as *ActorService) GetActorsByBirthdate(ctx context.Context, birthdate stri
     timeLayout := "2006-01-02"
     _, err := time.Parse(timeLayout, birthdate)
     if err != nil {
-        log.Println(err)
-        return []models.Actor{}, err
+        return []models.Actor{}, errs.BadRequest
     }
 
     actors, err := as.repo.GetActorsByBirthdate(ctx, birthdate)
     if err != nil {
-        log.Println(err)
         return []models.Actor{}, err
     }
     return actors, nil
@@ -70,22 +66,18 @@ func (as *ActorService) PostActor(ctx context.Context, req models.Actor) (models
     //Validate the input so that there are no empty fields.
 
     if req.Name == "" || req.BirthDate == "" {
-        message := "empty fields in method POST not allowed"
-        log.Println(message)
-        return models.Actor{}, errors.New(message)
+        return models.Actor{}, errs.BadRequest 
     }
 
     //validate birthdate
     timeLayout := "2006-01-02"
     _, err := time.Parse(timeLayout, req.BirthDate)
     if err != nil {
-        log.Println("invalid time: ", req.BirthDate)
-        return models.Actor{}, err
+        return models.Actor{}, errs.BadRequest
     }
 
     res, err := as.repo.PostActor(ctx, req)
     if err != nil {
-        log.Println(err)
         return models.Actor{}, err
     }
     return res, nil
@@ -97,7 +89,6 @@ func (as *ActorService) DeleteActor(ctx context.Context, id int) error {
 
 	err := as.repo.DeleteActor(ctx, id)
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 
@@ -108,13 +99,11 @@ func (as *ActorService) DeleteActor(ctx context.Context, id int) error {
 func (as *ActorService) PatchActor(ctx context.Context, req models.PatchActorReq, id int) error {
 
     if req.Name == nil && req.BirthDate == nil {
-        log.Println("no input given in method PATCH")
-        return errors.New("no input given in method PATCH")
+        return errs.BadRequest 
     }
 
     err := as.repo.PatchActor(ctx, req, id)
     if err != nil {
-        log.Println(err)
         return err
     }
     return nil
