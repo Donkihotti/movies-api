@@ -38,7 +38,7 @@ func (s *MovieService) GetMovieByID(id int) (models.Movie, error) {
 	return movie, nil
 }
 
-//POST MOVIE
+
 func (s *MovieService) PostMovie(ctx context.Context, req models.Movie) (models.Movie, error) {
 
     if req.Title == "" || req.Description == "" || req.ReleaseDate == "" {

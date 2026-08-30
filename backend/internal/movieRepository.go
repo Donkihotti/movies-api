@@ -47,7 +47,7 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 
 	req.ID = int(id)
 	genreIds := req.Genres
-
+	actorIds := req.Actors
 	
 	for _, genreId := range genreIds {
 		_, err := tx.ExecContext(
@@ -57,6 +57,20 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 		`,
 		req.ID,
 		genreId,
+		)
+		if err != nil {
+		return models.Movie{}, err
+		}
+	}
+
+	for _, actorId := range actorIds {
+		_, err := tx.ExecContext(
+		ctx,
+		`INSERT INTO movie_actors (movie_id, actor_id)
+		VALUES (?, ?)
+		`, 
+		req.ID,
+		actorId,
 		)
 		if err != nil {
 		return models.Movie{}, err

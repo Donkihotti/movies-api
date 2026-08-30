@@ -38,3 +38,4 @@ func main() {
 		log.Fatal("Starting server failed", err)
 	}
 }
+
