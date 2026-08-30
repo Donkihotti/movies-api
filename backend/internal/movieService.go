@@ -98,4 +98,20 @@ func (s *MovieService) DeleteMovie(ctx context.Context, id int) error {
     return nil
 }
 
+func (s *MovieService) MovieActors(ctx context.Context, id int) ([]models.Actor, error){
+
+	if id <= 0 {
+		return []models.Actor{}, errs.BadRequest
+	}	
+
+	actors, err := s.repo.MovieActors(ctx, id)
+	if err != nil {
+		return []models.Actor{}, errs.ServerError
+	}
+	if len(actors) == 0 {
+		return actors, errs.NotFound
+	}
+	return actors, nil
+}
+
 

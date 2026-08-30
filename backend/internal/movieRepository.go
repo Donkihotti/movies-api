@@ -212,3 +212,31 @@ func (r *MovieRepository) DeleteMovie(ctx context.Context, id int) error {
     return nil
 }
 
+func (r *MovieRepository) MovieActors(ctx context.Context, id int) ([]models.Actor, error) {
+
+	query := `SELECT a.id, a.name, a.birth_date FROM actors a JOIN movie_actors ma ON ma.actor_id = a.id WHERE ma.movie_id = ?`
+
+	rows, err := r.db.QueryContext(ctx, query, id)
+	if err != nil {
+		return []models.Actor{}, errs.ServerError
+	}
+	defer rows.Close()
+	actors := []models.Actor{}
+
+	for rows.Next() {
+	var actor models.Actor
+	
+	err := rows.Scan(
+		&actor.ID,
+		&actor.Name,
+		&actor.BirthDate,
+	)
+	if err != nil {
+		return []models.Actor{}, errs.ServerError
+	}
+	actors = append(actors, actor)
+	}
+	return actors, nil
+}
+
+

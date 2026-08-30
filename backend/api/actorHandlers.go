@@ -46,7 +46,6 @@ func (h *Handler) GetActorHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(actor)
 }
 
-//GET ACTORS NAME 
 func (h *Handler) GetActorsByNameHandler(w http.ResponseWriter, r *http.Request) {
 
     name := r.PathValue("name")

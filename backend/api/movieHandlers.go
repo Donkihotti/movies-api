@@ -127,3 +127,24 @@ func (h *Handler) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 	WriteStatus(w, r.Method)
 }
 
+func (h *Handler) MovieActors(w http.ResponseWriter, r *http.Request) {
+	idString := r.PathValue("movieId")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		log.Printf("Invalid id: %v\n", idString)
+		WriteErrorStatus(w, errs.BadRequest)
+		return
+	}
+
+	actors, err := h.MovieService.MovieActors(r.Context(), id)	
+	if err != nil {
+		log.Println(err)
+		WriteErrorStatus(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	WriteStatus(w, r.Method)
+	json.NewEncoder(w).Encode(actors)
+	
+}
