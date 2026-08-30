@@ -2,13 +2,12 @@ package internal
 
 import (
 	"context"
+	"strings"
 	"database/sql"
-	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
-	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"log"
-	"strconv"
-	"fmt"
 	"errors"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 )
 
 type MovieRepository struct {
@@ -50,7 +49,7 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 
 	req.ID = int(id)
 	genreIds := req.Genres
-
+	actorIds := req.Actors
 	
 	for _, genreId := range genreIds {
 		_, err := tx.ExecContext(
@@ -66,6 +65,20 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 		}
 	}
 
+	for _, actorId := range actorIds {
+		_, err := tx.ExecContext(
+		ctx,
+		`INSERT INTO movie_actors (movie_id, actor_id)
+		VALUES (?, ?)
+		`, 
+		req.ID,
+		actorId,
+		)
+		if err != nil {
+		return models.Movie{}, err
+		}
+	}
+
 	if err := tx.Commit(); err != nil {
 	return models.Movie{}, errs.ServerError
 	}
@@ -74,23 +87,36 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 }
 
 //GET ALL MOVIES
-func (r *MovieRepository) GetMovies(year int) ([]models.Movie, error) {
+func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie, error){
 
 	movies := []models.Movie{}
-	var err error
-	var rows *sql.Rows
-	var yearString = fmt.Sprintf("%%%v%%",strconv.Itoa(year))
+	var conditions []string
+	args := []any{}
 
-	//get all movies if the year is less than 1888
-	//first movie ever was made in 1888
-	if year < 1888 {
-		query := "SELECT id, title, description, release_date FROM movies" 
-		rows, err = r.db.Query(query)	
-	} else {
-		query := "SELECT id, title, description, release_date FROM movies WHERE release_date LIKE ?"
-		rows, err = r.db.Query(query, yearString)
-	}		
+	query := `SELECT m.id, m.title, m.description, m.release_date FROM movies m`
 
+	if filters.GenreID != nil {
+		query += ` JOIN movie_genres gm ON gm.movie_id = m.id`
+		conditions = append(conditions, "gm.genre_id = ?")
+		args = append(args, *filters.GenreID)
+	}
+
+	if filters.ActorID != nil {
+		query += ` JOIN movie_actors am ON am.movie_id = m.id`
+		conditions = append(conditions, "am.actor_id = ?")
+		args = append(args, *filters.ActorID)
+	}
+
+	if filters.ReleaseYear != nil {
+		conditions = append(conditions, "m.release_date LIKE ?")
+		args = append(args, "%" + *filters.ReleaseYear + "%")
+	}
+
+	if len(conditions) > 0 {
+		query += " WHERE " + strings.Join(conditions, " AND ")
+	}
+	
+	rows, err := r.db.Query(query, args...)
 	if err != nil {
 		return nil, errs.ServerError
 	}
@@ -107,13 +133,10 @@ func (r *MovieRepository) GetMovies(year int) ([]models.Movie, error) {
 		if err != nil {
 			return nil, errs.ServerError
 		}
-
 		movies = append(movies, movie)
 	}
-
 	return movies, nil
 }
-
 
 func (r *MovieRepository) GetMovieByID(id int) (models.Movie, error) {
 

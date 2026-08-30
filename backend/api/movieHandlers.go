@@ -12,9 +12,18 @@ import (
 //GET ALL MOVIES
 func (h *Handler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 
-	year := r.URL.Query().Get("releaseYear")
+	q := r.URL.Query()
 
-	movies, err := h.MovieService.GetMovies(year)
+	actorid := q.Get("actor")
+	genreid := q.Get("genre")
+	releaseYear := q.Get("releaseYear")
+
+	filters := models.MovieFilters{}
+	if actorid != "" { filters.ActorID = &actorid }
+	if genreid != "" { filters.GenreID = &genreid }
+	if releaseYear != "" { filters.ReleaseYear = &releaseYear }
+
+	movies, err := h.MovieService.GetMovies(filters)
 	if err != nil {
 		log.Println(err)
 		WriteErrorStatus(w, err)
@@ -28,6 +37,7 @@ func (h *Handler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 
 //GET MOVIE BY ID
 func (h *Handler) MovieHandler(w http.ResponseWriter, r *http.Request) {
+
 
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)

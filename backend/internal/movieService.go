@@ -12,6 +12,7 @@ type MovieService struct {
 	repo *MovieRepository
 }
 
+
 func NewMovieService(repo *MovieRepository) *MovieService {
 	return &MovieService{
 		repo: repo,
@@ -21,21 +22,17 @@ func NewMovieService(repo *MovieRepository) *MovieService {
 var timeLayout = "2006-01-02"
 
 //GET ALL MOVIES
-func (s *MovieService) GetMovies(releaseYear string) ([]models.Movie, error) {
+func (s *MovieService) GetMovies(filters models.MovieFilters) ([]models.Movie, error) {
 
-	year := 0 
-	var err error
-
-	if releaseYear != "" {
-		year, err = strconv.Atoi(releaseYear) 
-		if err != nil {
+	if filters.ReleaseYear != nil {
+		if _, err := strconv.Atoi(*filters.ReleaseYear); err != nil {
 			return []models.Movie{}, errs.BadRequest
 		}
 	}
-
-	movies, err1 := s.repo.GetMovies(year)
-	if err1 != nil {
-		return nil, err1
+	
+	movies, err := s.repo.GetMovies(filters)
+	if err != nil {
+		return nil, err
 	}
 	return movies, nil
 }
@@ -49,7 +46,7 @@ func (s *MovieService) GetMovieByID(id int) (models.Movie, error) {
 	return movie, nil
 }
 
-//POST MOVIE
+
 func (s *MovieService) PostMovie(ctx context.Context, req models.Movie) (models.Movie, error) {
 
     if req.Title == "" || req.Description == "" || req.ReleaseDate == "" {

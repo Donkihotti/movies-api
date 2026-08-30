@@ -6,6 +6,7 @@ type Movie struct {
 	Description string  `json:"description"`
 	ReleaseDate string  `json:"release_date"`
 	Genres      []int   `json:"genres"`
+	Actors 		[]int 	`json:"actors"`
 }
 
 type PatchMovieReq struct {
@@ -13,6 +14,7 @@ type PatchMovieReq struct {
 	Description *string  `json:"description"`
 	ReleaseDate *string	 `json:"release_date"`
 	Genres      []Genre  `json:"genres"`
+	Actors 		[]int 	 `json:"actors"`
 }
 
 type Genre struct {
@@ -33,4 +35,10 @@ type Actor struct {
 type PatchActorReq struct {
 	Name      *string `json:"name"`
 	BirthDate *string `json:"birth_date"`
+}
+
+type MovieFilters struct {
+	ActorID	    *string
+	GenreID     *string
+	ReleaseYear *string
 }

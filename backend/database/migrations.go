@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"os"
 	"path/filepath"
+	"log"
 	"slices"
 )
 
@@ -13,9 +14,11 @@ func RunMigrations(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
+	log.Println("FOUND MIGRATIONS:", files)
 
 	slices.Sort(files)
 	for _, file := range files {
+		log.Println("running migrations", file)
 		content, err := os.ReadFile(file)
 		if err != nil {
 			return err

@@ -9,7 +9,6 @@ import (
 	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 )
 
-//GET ALL ACTORS
 func (h *Handler) GetActorsHandler(w http.ResponseWriter, r *http.Request) {
 
 	name := r.URL.Query().Get("name")	
@@ -25,7 +24,6 @@ func (h *Handler) GetActorsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(actors)
 }
 
-//GET ONE ACTOR
 func (h *Handler) GetActorHandler(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
