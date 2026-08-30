@@ -102,13 +102,13 @@ func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie
 		args = append(args, *filters.GenreID)
 	}
 
-//	if filters.ActorID != nil {
-//		query += `
-//		JOIN movie_actors am ON am.movie_id = m.id
-//		`	
-//		conditions = append(conditions, "am.actor_id = ?")
-//		args = append(args, *filters.ActorID)
-//	}
+	if filters.ActorID != nil {
+		query += `
+		JOIN movie_actors am ON am.movie_id = m.id
+		`	
+		conditions = append(conditions, "am.actor_id = ?")
+		args = append(args, *filters.ActorID)
+	}
 
 	if len(conditions) > 0 {
 		query += " WHERE " + strings.Join(conditions, " AND ")

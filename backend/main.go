@@ -16,9 +16,17 @@ func main() {
 		log.Fatal(err)
 	}
 
+	_, err = db.Exec("PRAGMA foreign_keys = ON")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	defer db.Close()
 
 	err = database.RunMigrations(db)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	movieRepo := internal.NewMovieRepository(db)
 	genreRepo := internal.NewGenreRepository(db)
