@@ -219,21 +219,6 @@ this is safe, and it keeps the setup to a single `go run .`.
 
 Work in progress, listed honestly rather than left to be discovered:
 
-- **Force delete is not implemented.** `DELETE` on an entity with existing
-  relationships should return `400` with an explanatory message, and
-  `?force=true` should remove the relationships first. Currently every delete
-  succeeds and `ON DELETE CASCADE` removes the junction rows silently.
-- **Error responses have no body.** The status code is correct but the response
-  body is empty. A wrapper type carrying a message alongside the error value is
-  designed but not yet built.
-- **`GET /api/genres/{id}` returns the genre's movies, not the genre itself.**
-- **`PATCH /api/movies/{id}` ignores `genres` and `actors`.** Only the scalar
-  fields are updated. The same applies to an actor's associated movies.
-- **`GET` responses omit relationships.** A movie is returned without its
-  genres and actors; use `/api/movies/{id}/actors` and `/api/movies?genre=` in
-  the meantime.
-- **`GET /api/movies/{id}/actors` returns `404` for a movie with no actors**,
-  where `200` with an empty array would be correct.
 - **A foreign key violation returns `500`** rather than `400` — posting a movie
   with a non-existent genre ID is a client error.
 - **Pagination and title search** (the optional requirements) are not
