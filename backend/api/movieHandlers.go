@@ -17,11 +17,13 @@ func (h *Handler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 	actorid := q.Get("actor")
 	genreid := q.Get("genre")
 	releaseYear := q.Get("releaseYear")
+	duration := q.Get("duration")
 
 	filters := models.MovieFilters{}
 	if actorid != "" { filters.ActorID = &actorid }
 	if genreid != "" { filters.GenreID = &genreid }
 	if releaseYear != "" { filters.ReleaseYear = &releaseYear }
+	if duration != "" { filters.Duration = &duration}
 
 	movies, err := h.MovieService.GetMovies(filters)
 	if err != nil {
@@ -59,6 +61,7 @@ func (h *Handler) MovieHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(movie)
 }
 
+//POST MOVIE
 func (h *Handler) CreateMovie(w http.ResponseWriter, r *http.Request) {
 
     var req models.Movie
@@ -127,7 +130,9 @@ func (h *Handler) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 	WriteStatus(w, r.Method)
 }
 
+//GET ALL ACTORS WITHIN A MOVIE
 func (h *Handler) MovieActors(w http.ResponseWriter, r *http.Request) {
+
 	idString := r.PathValue("movieId")
 	id, err := strconv.Atoi(idString)
 	if err != nil {

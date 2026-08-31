@@ -39,6 +39,7 @@ func (s *MovieService) GetMovies(filters models.MovieFilters) ([]models.Movie, e
 
 //GET MOVIE BY ID
 func (s *MovieService) GetMovieByID(id int) (models.Movie, error) {
+
 	movie, err := s.repo.GetMovieByID(id)
 	if err != nil {
 		return models.Movie{}, err
@@ -49,7 +50,7 @@ func (s *MovieService) GetMovieByID(id int) (models.Movie, error) {
 
 func (s *MovieService) PostMovie(ctx context.Context, req models.Movie) (models.Movie, error) {
 
-    if req.Title == "" || req.Description == "" || req.ReleaseDate == "" {
+    if req.Title == "" || req.Description == "" || req.ReleaseDate == "" || req.Duration == "" {
         return models.Movie{}, errs.BadRequest 
     }
 
@@ -71,7 +72,7 @@ func (s *MovieService) PostMovie(ctx context.Context, req models.Movie) (models.
 //PATCH MOVIE
 func (s *MovieService) PatchMovie(ctx context.Context, req models.PatchMovieReq, id int) error {
 
-    if req.Title == nil && req.Description == nil && req.ReleaseDate == nil {
+    if req.Title == nil && req.Description == nil && req.ReleaseDate == nil && req.Duration == nil {
         return errs.BadRequest 
     }
 

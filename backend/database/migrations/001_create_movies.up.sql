@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS movies (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,    
     description TEXT, 
-    release_date INTEGER, 
+    release_date TEXT, 
+	duration TEXT,
 
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

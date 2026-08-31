@@ -22,27 +22,27 @@ INSERT OR IGNORE INTO actors (id, name, birth_date) VALUES
     (14, 'Scarlett Johansson', '1984-11-22'),
     (15, 'Bill Murray',        '1950-09-21');
 
-INSERT OR IGNORE INTO movies (id, title, description, release_date) VALUES
-    (1,  'The Matrix',                'A hacker discovers reality is a simulation',      '1999-03-31'),
-    (2,  'Heat',                      'A detective pursues a career thief',              '1995-12-15'),
-    (3,  'Inception',                 'Thieves steal secrets from inside dreams',        '2010-07-16'),
-    (4,  'Pulp Fiction',              'Interwoven stories of crime in Los Angeles',      '1994-10-14'),
-    (5,  'The Shawshank Redemption',  'A banker maintains hope through decades in jail', '1994-09-23'),
-    (6,  'Forrest Gump',              'A simple man witnesses decades of history',       '1994-07-06'),
-    (7,  'Se7en',                     'Two detectives hunt a killer using seven sins',   '1995-09-22'),
-    (8,  'Fight Club',                'An insomniac forms an underground club',          '1999-10-15'),
-    (9,  'The Departed',              'An undercover cop and a mole hunt each other',    '2006-10-06'),
-    (10, 'Lost in Translation',       'Two strangers connect in Tokyo',                  '2003-09-12'),
-    (11, 'Kill Bill: Vol. 1',         'An assassin seeks revenge on her former team',    '2003-10-10'),
-    (12, 'Catch Me If You Can',       'An FBI agent chases a teenage con artist',        '2002-12-25'),
-    (13, 'The Devil Wears Prada',     'An assistant survives a demanding editor',        '2006-06-30'),
-    (14, 'Groundhog Day',             'A weatherman relives the same day repeatedly',    '1993-02-12'),
-    (15, 'The Wolf of Wall Street',   'The rise and fall of a corrupt stockbroker',      '2013-12-25'),
-    (16, 'Her',                       'A writer falls in love with an operating system', '2013-12-18'),
-    (17, 'Marriage Story',            'A couple navigates a coast-to-coast divorce',     '2019-12-06'),
-    (18, 'The Irishman',              'A hitman recalls his life in organised crime',    '2019-11-27'),
-    (19, 'Lucy',                      'A woman gains extraordinary mental abilities',    '2014-07-25'),
-    (20, 'Bridge of Spies',           'A lawyer negotiates a Cold War prisoner swap',    '2015-10-16');
+INSERT OR IGNORE INTO movies (id, title, description, release_date, duration) VALUES
+    (1,  'The Matrix',                'A hacker discovers reality is a simulation',      '1999-03-31', '136'),
+    (2,  'Heat',                      'A detective pursues a career thief',              '1995-12-15', '170'),
+    (3,  'Inception',                 'Thieves steal secrets from inside dreams',        '2010-07-16', '148'),
+    (4,  'Pulp Fiction',              'Interwoven stories of crime in Los Angeles',      '1994-10-14', '154'),
+    (5,  'The Shawshank Redemption',  'A banker maintains hope through decades in jail', '1994-09-23', '142'),
+    (6,  'Forrest Gump',              'A simple man witnesses decades of history',       '1994-07-06', '142'),
+    (7,  'Se7en',                     'Two detectives hunt a killer using seven sins',   '1995-09-22', '127'),
+    (8,  'Fight Club',                'An insomniac forms an underground club',          '1999-10-15', '139'),
+    (9,  'The Departed',              'An undercover cop and a mole hunt each other',    '2006-10-06', '151'),
+    (10, 'Lost in Translation',       'Two strangers connect in Tokyo',                  '2003-09-12', '102'),
+    (11, 'Kill Bill: Vol. 1',         'An assassin seeks revenge on her former team',    '2003-10-10', '111'),
+    (12, 'Catch Me If You Can',       'An FBI agent chases a teenage con artist',        '2002-12-25', '141'),
+    (13, 'The Devil Wears Prada',     'An assistant survives a demanding editor',        '2006-06-30', '109'),
+    (14, 'Groundhog Day',             'A weatherman relives the same day repeatedly',    '1993-02-12', '101'),
+    (15, 'The Wolf of Wall Street',   'The rise and fall of a corrupt stockbroker',      '2013-12-25', '180'),
+    (16, 'Her',                       'A writer falls in love with an operating system', '2013-12-18', '126'),
+    (17, 'Marriage Story',            'A couple navigates a coast-to-coast divorce',     '2019-12-06', '137'),
+    (18, 'The Irishman',              'A hitman recalls his life in organised crime',    '2019-11-27', '209'),
+    (19, 'Lucy',                      'A woman gains extraordinary mental abilities',    '2014-07-25', '89'),
+    (20, 'Bridge of Spies',           'A lawyer negotiates a Cold War prisoner swap',    '2015-10-16', '142');
 
 INSERT OR IGNORE INTO movie_genres (movie_id, genre_id) VALUES
     (1, 1), (1, 4),

@@ -20,6 +20,7 @@ func NewMovieRepository(db *sql.DB) *MovieRepository {
 	}
 }
 
+//POST A MOVIE
 func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (models.Movie, error) {
 
 	tx, err := r.db.BeginTx(ctx, nil)
@@ -31,12 +32,13 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 
 	res, err := tx.ExecContext(
 	ctx, 
-	`INSERT INTO movies (title, description, release_date)
-	VALUES (?, ?, ?)
+	`INSERT INTO movies (title, description, release_date, duration)
+	VALUES (?, ?, ?, ?)
 	`,
 	req.Title,
 	req.Description,
 	req.ReleaseDate,
+	req.Duration,
 	)
 	if err != nil {
 	return models.Movie{}, errs.ServerError
@@ -93,7 +95,7 @@ func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie
 	var conditions []string
 	args := []any{}
 
-	query := `SELECT m.id, m.title, m.description, m.release_date FROM movies m`
+	query := `SELECT m.id, m.title, m.description, m.release_date, m.duration FROM movies m`
 
 	if filters.GenreID != nil {
 		query += ` JOIN movie_genres gm ON gm.movie_id = m.id`
@@ -112,6 +114,11 @@ func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie
 		args = append(args, "%" + *filters.ReleaseYear + "%")
 	}
 
+//	if filters.Duration != nil {
+//		conditions = append(conditions, "m.duration = ?")
+//		args = append(args, "%" + *filters.Duration + "%")
+//	}
+
 	if len(conditions) > 0 {
 		query += " WHERE " + strings.Join(conditions, " AND ")
 	}
@@ -129,6 +136,7 @@ func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie
 			&movie.Title,
 			&movie.Description,
 			&movie.ReleaseDate,
+			&movie.Duration,
 		)
 		if err != nil {
 			return nil, errs.ServerError
@@ -138,12 +146,13 @@ func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie
 	return movies, nil
 }
 
+//GET MOVIE BY ID
 func (r *MovieRepository) GetMovieByID(id int) (models.Movie, error) {
 
 	var movie models.Movie
 
 	row := r.db.QueryRow(
-		`SELECT id, title, description, release_date
+		`SELECT id, title, description, release_date, duration
 		FROM movies WHERE id = ?`, id)
 
 	err := row.Scan(
@@ -151,6 +160,7 @@ func (r *MovieRepository) GetMovieByID(id int) (models.Movie, error) {
 		&movie.Title,
 		&movie.Description,
 		&movie.ReleaseDate,
+		&movie.Duration,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -168,11 +178,12 @@ func (r *MovieRepository) PatchMovie(ctx context.Context, movie models.PatchMovi
     res, err := r.db.ExecContext(
         ctx,
         `
-    UPDATE movies SET title = COALESCE(?, title), description = COALESCE(?, description), release_date = COALESCE(?, release_date) WHERE id = ?
+    UPDATE movies SET title = COALESCE(?, title), description = COALESCE(?, description), release_date = COALESCE(?, release_date), duration = COALESCE(?, duration) WHERE id = ?
     `,
-        movie.Title,		//voidaan antaa pointerit sellaisenaan, sql osaa tulkita niitä itse
+        movie.Title,		
         movie.Description,
         movie.ReleaseDate,
+		movie.Duration,
         id,
     )
     if err != nil {
@@ -212,6 +223,7 @@ func (r *MovieRepository) DeleteMovie(ctx context.Context, id int) error {
     return nil
 }
 
+//GET ACTORS FROM A GIVEN MOVIE
 func (r *MovieRepository) MovieActors(ctx context.Context, id int) ([]models.Actor, error) {
 
 	query := `SELECT a.id, a.name, a.birth_date FROM actors a JOIN movie_actors ma ON ma.actor_id = a.id WHERE ma.movie_id = ?`

@@ -17,6 +17,7 @@ func NewGenreRepository(db *sql.DB) *GenreRepository {
 	}
 }
 
+//GET ALL GENRES
 func (r *GenreRepository) GetGenres(ctx context.Context) ([]models.Genre, error) {
 
 	genres := []models.Genre{}
@@ -46,11 +47,12 @@ func (r *GenreRepository) GetGenres(ctx context.Context) ([]models.Genre, error)
 	return genres, nil
 }
 
+//GET GENRE BY ID
 func (r *GenreRepository) GetGenre(ctx context.Context, id int) ([]models.Movie, error) {
 
 	movies := []models.Movie{}
 
-	query := `SELECT m.id, m.title, m.description, m.release_date
+	query := `SELECT m.id, m.title, m.description, m.release_date, m.duration
 	FROM movies AS m
 	JOIN movie_genres AS mg ON mg.movie_id = m.id
 	JOIN genres AS g ON g.id = mg.genre_id
@@ -65,7 +67,7 @@ func (r *GenreRepository) GetGenre(ctx context.Context, id int) ([]models.Movie,
 
 	for rows.Next() {
 	var movie models.Movie
-		if err := rows.Scan(&movie.ID, &movie.Title, &movie.Description, &movie.ReleaseDate); err != nil {
+		if err := rows.Scan(&movie.ID, &movie.Title, &movie.Description, &movie.ReleaseDate, &movie.Duration); err != nil {
 		return nil, errs.ServerError
 		}
 	movies = append(movies, movie)
@@ -74,6 +76,7 @@ func (r *GenreRepository) GetGenre(ctx context.Context, id int) ([]models.Movie,
 	return movies, nil
 }
 
+//POST GENRE
 func (r *GenreRepository) PostGenre(ctx context.Context, genre models.Genre) (models.Genre, error) {
 
 	res, err := r.db.ExecContext(
@@ -94,6 +97,7 @@ func (r *GenreRepository) PostGenre(ctx context.Context, genre models.Genre) (mo
 	return genre, nil
 }
 
+//DELETE GENRE
 func (r *GenreRepository) DeleteGenre(ctx context.Context, id int) error {
 
 	res, err := r.db.ExecContext(
@@ -115,6 +119,7 @@ func (r *GenreRepository) DeleteGenre(ctx context.Context, id int) error {
 	return nil
 }
 
+//PATCH GENRE
 func (r *GenreRepository) PatchGenre(ctx context.Context, newGenre models.Genre, id int) error {
 
 	res, err := r.db.ExecContext(
