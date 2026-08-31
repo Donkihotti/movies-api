@@ -5,6 +5,7 @@ type Movie struct {
 	Title       string  `json:"title"`
 	Description string  `json:"description"`
 	ReleaseDate string  `json:"release_date"`
+	Duration	int		`json:"duration"`
 	Genres      []int   `json:"genres"`
 	Actors 		[]int 	`json:"actors"`
 }
@@ -41,4 +42,5 @@ type MovieFilters struct {
 	ActorID	    *string
 	GenreID     *string
 	ReleaseYear *string
+	Duration	*int
 }

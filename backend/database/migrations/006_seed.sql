@@ -1,4 +1,3 @@
-
 INSERT OR IGNORE INTO genres (id, genre_name) VALUES
     (1, 'Action'),
     (2, 'Drama'),
@@ -87,4 +86,4 @@ INSERT OR IGNORE INTO movie_actors (movie_id, actor_id) VALUES
     (17, 14), (17, 6),
     (18, 5), (18, 4), (18, 13),
     (19, 14), (19, 11),
-    (20, 7), (20, 10);
+    (20, 7), (20, 10)

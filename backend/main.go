@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"net/http"
-
 	"gitea.kood.tech/timdanielfiander/movies-api.git/api"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/database"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/internal"
