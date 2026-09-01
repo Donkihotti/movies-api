@@ -1,3 +1,0 @@
-10.8
-status koodit ilmeisesti pitää muuttaa, 202 --> 200 (get metodeissa) ja post
-metodeissa status koodi 201.

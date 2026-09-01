@@ -1,22 +1,22 @@
 package models
 
 type Movie struct {
-	ID          int     `json:"id"`
-	Title       string  `json:"title"`
-	Description string  `json:"description"`
-	ReleaseDate string  `json:"release_date"`
-	Duration	string  `json:"duration"`
-	Genres      []int   `json:"genres"`
-	Actors 		[]int 	`json:"actors"`
+	ID          int    `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	ReleaseDate string `json:"release_date"`
+	Duration    string `json:"duration"`
+	Genres      []int  `json:"genres"`
+	Actors      []int  `json:"actors"`
 }
 
 type PatchMovieReq struct {
-	Title       *string  `json:"title"`
-	Description *string  `json:"description"`
-	ReleaseDate *string	 `json:"release_date"`
-	Duration	*string  `json:"duration"`
-	Genres      []Genre  `json:"genres"`
-	Actors 		[]int 	 `json:"actors"`
+	Title       *string `json:"title"`
+	Description *string `json:"description"`
+	ReleaseDate *string `json:"release_date"`
+	Duration    *string `json:"duration"`
+	Genres      []Genre `json:"genres"`
+	Actors      []int   `json:"actors"`
 }
 
 type Genre struct {
@@ -40,8 +40,8 @@ type PatchActorReq struct {
 }
 
 type MovieFilters struct {
-	ActorID	    *string
+	ActorID     *string
 	GenreID     *string
 	ReleaseYear *string
-	Duration	*string
+	Duration    *string
 }

@@ -1,19 +1,19 @@
-package internal
+package service
 
 import (
 	"context"
-	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
-	"time"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/repository"
 	"strconv"
+	"time"
 )
 
 type MovieService struct {
-	repo *MovieRepository
+	repo *repository.MovieRepository
 }
 
-
-func NewMovieService(repo *MovieRepository) *MovieService {
+func NewMovieService(repo *repository.MovieRepository) *MovieService {
 	return &MovieService{
 		repo: repo,
 	}
@@ -21,7 +21,7 @@ func NewMovieService(repo *MovieRepository) *MovieService {
 
 var timeLayout = "2006-01-02"
 
-//GET ALL MOVIES
+// GET ALL MOVIES
 func (s *MovieService) GetMovies(filters models.MovieFilters) ([]models.Movie, error) {
 
 	if filters.ReleaseYear != nil {
@@ -29,7 +29,7 @@ func (s *MovieService) GetMovies(filters models.MovieFilters) ([]models.Movie, e
 			return []models.Movie{}, errs.BadRequest
 		}
 	}
-	
+
 	movies, err := s.repo.GetMovies(filters)
 	if err != nil {
 		return nil, err
@@ -37,7 +37,7 @@ func (s *MovieService) GetMovies(filters models.MovieFilters) ([]models.Movie, e
 	return movies, nil
 }
 
-//GET MOVIE BY ID
+// GET MOVIE BY ID
 func (s *MovieService) GetMovieByID(id int) (models.Movie, error) {
 
 	movie, err := s.repo.GetMovieByID(id)
@@ -47,34 +47,32 @@ func (s *MovieService) GetMovieByID(id int) (models.Movie, error) {
 	return movie, nil
 }
 
-
 func (s *MovieService) PostMovie(ctx context.Context, req models.Movie) (models.Movie, error) {
 
-    if req.Title == "" || req.Description == "" || req.ReleaseDate == "" || req.Duration == "" {
-        return models.Movie{}, errs.BadRequest 
-    }
+	if req.Title == "" || req.Description == "" || req.ReleaseDate == "" || req.Duration == "" {
+		return models.Movie{}, errs.BadRequest
+	}
 
-    releaseDate := req.ReleaseDate
-    _, err := time.Parse(timeLayout, releaseDate)
-    if err != nil {
-        return models.Movie{}, errs.BadRequest
-    }
+	releaseDate := req.ReleaseDate
+	_, err := time.Parse(timeLayout, releaseDate)
+	if err != nil {
+		return models.Movie{}, errs.BadRequest
+	}
 
-    movie, err := s.repo.PostMovie(ctx, req)
-    if err != nil {
-        return models.Movie{}, err
-    }
+	movie, err := s.repo.PostMovie(ctx, req)
+	if err != nil {
+		return models.Movie{}, err
+	}
 
-    return movie, nil
+	return movie, nil
 }
 
-
-//PATCH MOVIE
+// PATCH MOVIE
 func (s *MovieService) PatchMovie(ctx context.Context, req models.PatchMovieReq, id int) error {
 
-    if req.Title == nil && req.Description == nil && req.ReleaseDate == nil && req.Duration == nil {
-        return errs.BadRequest 
-    }
+	if req.Title == nil && req.Description == nil && req.ReleaseDate == nil && req.Duration == nil {
+		return errs.BadRequest
+	}
 
 	if req.ReleaseDate != nil {
 		releaseDate := *req.ReleaseDate
@@ -84,26 +82,26 @@ func (s *MovieService) PatchMovie(ctx context.Context, req models.PatchMovieReq,
 		}
 	}
 
-    err := s.repo.PatchMovie(ctx, req, id)
-    if err != nil {
-        return err
-    }
-    return nil
+	err := s.repo.PatchMovie(ctx, req, id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-//DELETE MOVIE
+// DELETE MOVIE
 func (s *MovieService) DeleteMovie(ctx context.Context, id int) error {
-    if err := s.repo.DeleteMovie(ctx, id); err != nil {
-        return err
-    }
-    return nil
+	if err := s.repo.DeleteMovie(ctx, id); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (s *MovieService) MovieActors(ctx context.Context, id int) ([]models.Actor, error){
+func (s *MovieService) MovieActors(ctx context.Context, id int) ([]models.Actor, error) {
 
 	if id <= 0 {
 		return []models.Actor{}, errs.BadRequest
-	}	
+	}
 
 	actors, err := s.repo.MovieActors(ctx, id)
 	if err != nil {
@@ -114,5 +112,3 @@ func (s *MovieService) MovieActors(ctx context.Context, id int) ([]models.Actor,
 	}
 	return actors, nil
 }
-
-

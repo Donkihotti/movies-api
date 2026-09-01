@@ -1,6 +1,0 @@
-POST command: 
-curl -X POST http://localhost:8080/movies -H "Content-Type: application/json" -d '{"title": "barbie", "description":"good movie", "release_date":2025}'
-
-GET command: 
-curl http://localhost:8080/movies
-

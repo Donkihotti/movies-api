@@ -1,4 +1,4 @@
-package internal
+package repository
 
 import (
 	"context"
@@ -17,7 +17,7 @@ func NewGenreRepository(db *sql.DB) *GenreRepository {
 	}
 }
 
-//GET ALL GENRES
+// GET ALL GENRES
 func (r *GenreRepository) GetGenres(ctx context.Context) ([]models.Genre, error) {
 
 	genres := []models.Genre{}
@@ -47,7 +47,7 @@ func (r *GenreRepository) GetGenres(ctx context.Context) ([]models.Genre, error)
 	return genres, nil
 }
 
-//GET GENRE BY ID
+// GET GENRE BY ID
 func (r *GenreRepository) GetGenre(ctx context.Context, id int) ([]models.Movie, error) {
 
 	movies := []models.Movie{}
@@ -66,17 +66,17 @@ func (r *GenreRepository) GetGenre(ctx context.Context, id int) ([]models.Movie,
 	defer rows.Close()
 
 	for rows.Next() {
-	var movie models.Movie
+		var movie models.Movie
 		if err := rows.Scan(&movie.ID, &movie.Title, &movie.Description, &movie.ReleaseDate, &movie.Duration); err != nil {
-		return nil, errs.ServerError
+			return nil, errs.ServerError
 		}
-	movies = append(movies, movie)
+		movies = append(movies, movie)
 	}
 
 	return movies, nil
 }
 
-//POST GENRE
+// POST GENRE
 func (r *GenreRepository) PostGenre(ctx context.Context, genre models.Genre) (models.Genre, error) {
 
 	res, err := r.db.ExecContext(
@@ -97,7 +97,7 @@ func (r *GenreRepository) PostGenre(ctx context.Context, genre models.Genre) (mo
 	return genre, nil
 }
 
-//DELETE GENRE
+// DELETE GENRE
 func (r *GenreRepository) DeleteGenre(ctx context.Context, id int) error {
 
 	res, err := r.db.ExecContext(
@@ -114,12 +114,12 @@ func (r *GenreRepository) DeleteGenre(ctx context.Context, id int) error {
 	}
 
 	if rows == 0 {
-		return errs.NotFound 
+		return errs.NotFound
 	}
 	return nil
 }
 
-//PATCH GENRE
+// PATCH GENRE
 func (r *GenreRepository) PatchGenre(ctx context.Context, newGenre models.Genre, id int) error {
 
 	res, err := r.db.ExecContext(
@@ -137,7 +137,7 @@ func (r *GenreRepository) PatchGenre(ctx context.Context, newGenre models.Genre,
 		return errs.ServerError
 	}
 	if rows == 0 {
-		return errs.NotFound 
+		return errs.NotFound
 	}
 
 	return nil

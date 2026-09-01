@@ -1,16 +1,17 @@
-package internal
+package service
 
 import (
 	"context"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/repository"
 )
 
 type GenreService struct {
-	repo *GenreRepository
+	repo *repository.GenreRepository
 }
 
-func NewGenreService(repo *GenreRepository) *GenreService {
+func NewGenreService(repo *repository.GenreRepository) *GenreService {
 	return &GenreService{
 		repo: repo,
 	}
@@ -30,7 +31,7 @@ func (s *GenreService) GetGenre(ctx context.Context, id int) ([]models.Movie, er
 
 	genre, err := s.repo.GetGenre(ctx, id)
 	if err != nil {
-	return nil, err
+		return nil, err
 	}
 
 	return genre, nil
@@ -66,7 +67,7 @@ func (s *GenreService) DeleteGenre(ctx context.Context, id int) error {
 func (s *GenreService) PatchGenre(ctx context.Context, newGenre models.Genre, id int) error {
 
 	if newGenre.Genre == "" {
-		return errs.BadRequest 
+		return errs.BadRequest
 	}
 
 	err := s.repo.PatchGenre(ctx, newGenre, id)

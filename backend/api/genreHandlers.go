@@ -2,8 +2,8 @@ package api
 
 import (
 	"encoding/json"
-	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"log"
 	"net/http"
 	"strconv"
@@ -22,15 +22,14 @@ func (h *Handler) GenresHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(genre)
 }
 
-
 func (h *Handler) GenreHandler(w http.ResponseWriter, r *http.Request) {
-	
+
 	idString := r.PathValue("id")
-	id, err := strconv.Atoi(idString)	
+	id, err := strconv.Atoi(idString)
 	if err != nil {
-	log.Println(err)
-	WriteErrorStatus(w, errs.BadRequest)
-	return 
+		log.Println(err)
+		WriteErrorStatus(w, errs.BadRequest)
+		return
 	}
 
 	genre, err := h.GenreService.GetGenre(r.Context(), id)
@@ -39,12 +38,11 @@ func (h *Handler) GenreHandler(w http.ResponseWriter, r *http.Request) {
 		WriteErrorStatus(w, err)
 		return
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	WriteStatus(w, r.Method)
 	json.NewEncoder(w).Encode(genre)
 }
-
 
 func (h *Handler) CreateGenre(w http.ResponseWriter, r *http.Request) {
 
@@ -59,7 +57,7 @@ func (h *Handler) CreateGenre(w http.ResponseWriter, r *http.Request) {
 
 	genre, err := h.GenreService.PostGenre(r.Context(), req)
 	if err != nil {
-		log.Println(err)	
+		log.Println(err)
 		WriteErrorStatus(w, err)
 		return
 	}

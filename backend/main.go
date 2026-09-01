@@ -1,11 +1,12 @@
 package main
 
 import (
-	"log"
-	"net/http"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/api"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/database"
-	"gitea.kood.tech/timdanielfiander/movies-api.git/internal"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/repository"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/service"
+	"log"
+	"net/http"
 )
 
 func main() {
@@ -27,13 +28,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	movieRepo := internal.NewMovieRepository(db)
-	genreRepo := internal.NewGenreRepository(db)
-	actorRepo := internal.NewActorRepository(db)
+	movieRepo := repository.NewMovieRepository(db)
+	genreRepo := repository.NewGenreRepository(db)
+	actorRepo := repository.NewActorRepository(db)
 
-	movieService := internal.NewMovieService(movieRepo)
-	genreService := internal.NewGenreService(genreRepo)
-	actorService := internal.NewActorService(actorRepo)
+	movieService := service.NewMovieService(movieRepo)
+	genreService := service.NewGenreService(genreRepo)
+	actorService := service.NewActorService(actorRepo)
 
 	handler := api.NewHandler(movieService, genreService, actorService)
 
@@ -45,4 +46,3 @@ func main() {
 		log.Fatal("Starting server failed", err)
 	}
 }
-
