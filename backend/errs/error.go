@@ -10,9 +10,5 @@ var ServerError = errors.New("internal server error")
 var Conflict = errors.New("error: conflict")
 
 
-type ErrorStruct struct {
-	Err error
-	Msg string
-}
 
 
