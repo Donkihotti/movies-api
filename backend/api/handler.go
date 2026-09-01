@@ -4,6 +4,7 @@ import (
 	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/service"
 	"net/http"
+	"fmt"
 )
 
 type Handler struct {
@@ -21,8 +22,8 @@ func NewHandler(MovieService *service.MovieService, GenreService *service.GenreS
 }
 
 // Write status and print error
-func WriteErrorStatus(w http.ResponseWriter, err error) {
-	switch err {
+func WriteErrorStatus(w http.ResponseWriter, es ErrorStruct) {
+	switch es.ErrType {
 	case errs.NotFound:
 		w.WriteHeader(http.StatusNotFound)
 	case errs.BadRequest:
