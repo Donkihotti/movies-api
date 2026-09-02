@@ -2,10 +2,10 @@ package service
 
 import (
 	"context"
+	"errors"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/repository"
-	"errors"
 )
 
 type GenreService struct {
@@ -22,13 +22,13 @@ func (s *GenreService) GetGenres(ctx context.Context) ([]models.Genre, errs.Erro
 
 	genres, errStruct := s.repo.GetGenres(ctx)
 	if errStruct.ErrType != nil {
-		return nil, errStruct 
+		return nil, errStruct
 	}
 
-	return genres, errs.ErrorStruct{} 
+	return genres, errs.ErrorStruct{}
 }
 
-//change
+// change
 func (s *GenreService) GetGenre(ctx context.Context, id int) (models.Genre, errs.ErrorStruct) {
 
 	genre, errStruct := s.repo.GetGenre(ctx, id)
@@ -36,7 +36,7 @@ func (s *GenreService) GetGenre(ctx context.Context, id int) (models.Genre, errs
 		return models.Genre{}, errStruct
 	}
 
-	return genre, errs.ErrorStruct{} 
+	return genre, errs.ErrorStruct{}
 }
 
 func (s *GenreService) PostGenre(ctx context.Context, req models.Genre) (models.Genre, errs.ErrorStruct) {
@@ -46,15 +46,15 @@ func (s *GenreService) PostGenre(ctx context.Context, req models.Genre) (models.
 			errs.BadRequest,
 			errors.New("empty fields not allowed when posting genre"),
 		)
-		return models.Genre{}, errStruct  
+		return models.Genre{}, errStruct
 	}
 
 	res, errStruct := s.repo.PostGenre(ctx, req)
 	if errStruct.ErrType != nil {
-		return models.Genre{}, errStruct 
+		return models.Genre{}, errStruct
 	}
 
-	return res, errs.ErrorStruct{} 
+	return res, errs.ErrorStruct{}
 }
 
 func (s *GenreService) DeleteGenre(ctx context.Context, id int) error {

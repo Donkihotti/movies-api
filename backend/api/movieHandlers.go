@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-//CHANGE
+// CHANGE
 // GET ALL MOVIES
 func (h *Handler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -46,8 +46,7 @@ func (h *Handler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(movies)
 }
 
-
-//CHANGE
+// CHANGE
 // GET MOVIE BY ID
 func (h *Handler) MovieHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -71,9 +70,7 @@ func (h *Handler) MovieHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(movie)
 }
 
-
-
-//CHANGE
+// CHANGE
 // POST MOVIE
 func (h *Handler) CreateMovie(w http.ResponseWriter, r *http.Request) {
 
@@ -98,8 +95,7 @@ func (h *Handler) CreateMovie(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(movie)
 }
 
-
-//CHANGE
+// CHANGE
 // PATCH MOVIE
 func (h *Handler) PatchMovie(w http.ResponseWriter, r *http.Request) {
 
@@ -125,7 +121,7 @@ func (h *Handler) PatchMovie(w http.ResponseWriter, r *http.Request) {
 	WriteStatus(w, r.Method)
 }
 
-//CHANGE
+// CHANGE
 // DELETE MOVIE
 func (h *Handler) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 
@@ -146,7 +142,7 @@ func (h *Handler) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 	WriteStatus(w, r.Method)
 }
 
-//CHANGE
+// CHANGE
 // GET ALL ACTORS WITHIN A MOVIE
 func (h *Handler) MovieActors(w http.ResponseWriter, r *http.Request) {
 

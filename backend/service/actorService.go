@@ -2,13 +2,13 @@ package service
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/repository"
-	"time"
 	"log"
-	"errors"
-	"fmt"
+	"time"
 )
 
 type ActorService struct {
@@ -23,34 +23,33 @@ func NewActorService(repo *repository.ActorRepository) *ActorService {
 
 const timeLayout = "2006-01-02"
 
-//done
+// done
 func (as *ActorService) GetActors(name string) ([]models.Actor, errs.ErrorStruct) {
 	actors, errStruct := as.repo.GetActors(name)
 	if errStruct.ErrType != nil {
 		return nil, errStruct
 	}
-	return actors, errs.ErrorStruct{} 
+	return actors, errs.ErrorStruct{}
 }
 
-//done
+// done
 func (as *ActorService) GetActorByID(id int) (models.Actor, errs.ErrorStruct) {
 	actor, errStruct := as.repo.GetActorByID(id)
 	if errStruct.ErrType != nil {
 		return models.Actor{}, errStruct
 	}
-	return actor, errs.ErrorStruct{} 
+	return actor, errs.ErrorStruct{}
 }
 
-//done
+// done
 func (as *ActorService) GetActorsByName(ctx context.Context, name string) ([]models.Actor, errs.ErrorStruct) {
 
-        actors, errStruct := as.repo.GetActorsByName(ctx, name)   
-        if errStruct.ErrType != nil {                            
-		return []models.Actor{}, errStruct 
+	actors, errStruct := as.repo.GetActorsByName(ctx, name)
+	if errStruct.ErrType != nil {
+		return []models.Actor{}, errStruct
 	}
-	return actors, errs.ErrorStruct{} 
+	return actors, errs.ErrorStruct{}
 }
-
 
 func (as *ActorService) GetActorsByBirthdate(ctx context.Context, birthdate string) ([]models.Actor, errs.ErrorStruct) {
 
@@ -61,17 +60,17 @@ func (as *ActorService) GetActorsByBirthdate(ctx context.Context, birthdate stri
 			errs.BadRequest,
 			fmt.Errorf("invalid birthdate: %v", birthdate),
 		)
-		return []models.Actor{}, errStruct 
+		return []models.Actor{}, errStruct
 	}
 
 	actors, errStruct := as.repo.GetActorsByBirthdate(ctx, birthdate)
 	if errStruct.ErrType != nil {
 		return []models.Actor{}, errStruct
 	}
-	return actors, errs.ErrorStruct{} 
+	return actors, errs.ErrorStruct{}
 }
 
-//done
+// done
 func (as *ActorService) PostActor(ctx context.Context, req models.Actor) (models.Actor, errs.ErrorStruct) {
 
 	if req.Name == "" || req.BirthDate == "" {
@@ -80,7 +79,7 @@ func (as *ActorService) PostActor(ctx context.Context, req models.Actor) (models
 			errors.New("empty fields are not allowed when creating an actor"),
 		)
 		log.Println(errStruct.Error())
-		return models.Actor{}, errStruct 
+		return models.Actor{}, errStruct
 	}
 
 	_, err := time.Parse(timeLayout, req.BirthDate)
@@ -90,26 +89,26 @@ func (as *ActorService) PostActor(ctx context.Context, req models.Actor) (models
 			errs.BadRequest,
 			fmt.Errorf("invalid time: %v", req.BirthDate),
 		)
-		return models.Actor{}, errStruct 
+		return models.Actor{}, errStruct
 	}
 
 	res, errStruct := as.repo.PostActor(ctx, req)
 	if errStruct.ErrType != nil {
-		return models.Actor{}, errStruct 
+		return models.Actor{}, errStruct
 	}
-	return res, errs.ErrorStruct{} 
+	return res, errs.ErrorStruct{}
 }
 
 func (as *ActorService) DeleteActor(ctx context.Context, id int) errs.ErrorStruct {
 
 	errStruct := as.repo.DeleteActor(ctx, id)
 	if errStruct.ErrType != nil {
-		return errStruct 
+		return errStruct
 	}
-	return errs.ErrorStruct{} 
+	return errs.ErrorStruct{}
 }
 
-//done
+// done
 func (as *ActorService) PatchActor(ctx context.Context, req models.PatchActorReq, id int) errs.ErrorStruct {
 
 	if req.Name == nil && req.BirthDate == nil {
@@ -117,12 +116,12 @@ func (as *ActorService) PatchActor(ctx context.Context, req models.PatchActorReq
 			errs.BadRequest,
 			errors.New("no new values set updating actor"),
 		)
-		log.Println(errStruct.Error())	
+		log.Println(errStruct.Error())
 		return errStruct
 	}
 
 	if req.BirthDate != nil {
-		_, err := time.Parse(timeLayout, *req.BirthDate)	
+		_, err := time.Parse(timeLayout, *req.BirthDate)
 		if err != nil {
 			errStruct := errs.NewErrorStruct(
 				errs.BadRequest,
@@ -136,12 +135,5 @@ func (as *ActorService) PatchActor(ctx context.Context, req models.PatchActorReq
 	if errStruct.ErrType != nil {
 		return errStruct
 	}
-	return errs.ErrorStruct{} 
+	return errs.ErrorStruct{}
 }
-
-
-
-
-
-
-

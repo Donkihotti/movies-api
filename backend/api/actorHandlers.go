@@ -2,24 +2,24 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"log"
 	"net/http"
 	"strconv"
-	"fmt"
-	"errors"
 )
 
-//done
+// done
 func (h *Handler) GetActorsHandler(w http.ResponseWriter, r *http.Request) {
 
 	name := r.URL.Query().Get("name")
 
-	actors, errStruct := h.ActorService.GetActors(name) 
+	actors, errStruct := h.ActorService.GetActors(name)
 	if errStruct.ErrType != nil {
 		log.Println(errStruct.Error())
-		WriteErrorStatus(w, errStruct) 
+		WriteErrorStatus(w, errStruct)
 		return
 	}
 
@@ -28,16 +28,16 @@ func (h *Handler) GetActorsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(actors)
 }
 
-//done
+// done
 func (h *Handler) GetActorHandler(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
-	id, err := strconv.Atoi(idString) 
+	id, err := strconv.Atoi(idString)
 	if err != nil {
 		log.Println(err)
 		WriteErrorStatus(w, errs.ErrorStruct{
 			ErrType: errs.BadRequest,
-			ErrMsg: fmt.Errorf("invalid actor id: %v", idString),
+			ErrMsg:  fmt.Errorf("invalid actor id: %v", idString),
 		})
 		return
 	}
@@ -54,7 +54,7 @@ func (h *Handler) GetActorHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(actor)
 }
 
-//done
+// done
 func (h *Handler) GetActorsByNameHandler(w http.ResponseWriter, r *http.Request) {
 
 	name := r.PathValue("name")
@@ -72,8 +72,7 @@ func (h *Handler) GetActorsByNameHandler(w http.ResponseWriter, r *http.Request)
 	json.NewEncoder(w).Encode(actors)
 }
 
-
-//NEEDS TO CHANGE
+// NEEDS TO CHANGE
 func (h *Handler) GetActorsByBirthdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	date := r.PathValue("birthdate")
@@ -90,8 +89,7 @@ func (h *Handler) GetActorsByBirthdateHandler(w http.ResponseWriter, r *http.Req
 	json.NewEncoder(w).Encode(actors)
 }
 
-
-//done
+// done
 func (h *Handler) PostActor(w http.ResponseWriter, r *http.Request) {
 
 	var req models.Actor
@@ -119,8 +117,7 @@ func (h *Handler) PostActor(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(actor)
 }
 
-
-//done
+// done
 func (h *Handler) DeleteActorHandler(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
@@ -144,7 +141,7 @@ func (h *Handler) DeleteActorHandler(w http.ResponseWriter, r *http.Request) {
 	WriteStatus(w, r.Method)
 }
 
-//done
+// done
 func (h *Handler) PatchActorHandler(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")

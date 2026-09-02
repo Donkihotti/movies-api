@@ -3,11 +3,11 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"fmt"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"log"
-	"errors"
-	"fmt"
 )
 
 type GenreRepository struct {
@@ -31,7 +31,7 @@ func (r *GenreRepository) GetGenres(ctx context.Context) ([]models.Genre, errs.E
 			errs.ServerError,
 			errors.New("something went wrong fetching genres"),
 		)
-		return nil, errStruct 
+		return nil, errStruct
 	}
 	defer rows.Close()
 
@@ -47,42 +47,41 @@ func (r *GenreRepository) GetGenres(ctx context.Context) ([]models.Genre, errs.E
 				errs.ServerError,
 				errors.New("something went wrong fetching genres"),
 			)
-			return nil, errStruct 
+			return nil, errStruct
 		}
 		genres = append(genres, genre)
 	}
-	return genres, errs.ErrorStruct{} 
+	return genres, errs.ErrorStruct{}
 }
 
-
-//GET GENRE BY ID
+// GET GENRE BY ID
 func (r *GenreRepository) GetGenre(ctx context.Context, id int) (models.Genre, errs.ErrorStruct) {
 
 	genre := models.Genre{}
 
-	query := `SELECT id, genre_name FROM genres WHERE id = ?`	
+	query := `SELECT id, genre_name FROM genres WHERE id = ?`
 	row := r.db.QueryRowContext(ctx, query, id)
-	err := row.Scan(&genre.ID, &genre.Genre) 
+	err := row.Scan(&genre.ID, &genre.Genre)
 
 	if err != nil {
 		log.Println(err)
 		if errors.Is(err, sql.ErrNoRows) {
 			errStruct := errs.NewErrorStruct(
-			    errs.NotFound,
-			    fmt.Errorf("no matching genres with id: %v", id),
-		)
+				errs.NotFound,
+				fmt.Errorf("no matching genres with id: %v", id),
+			)
 			return models.Genre{}, errStruct
 		}
-			errStruct := errs.NewErrorStruct(
-				errs.ServerError,
-				fmt.Errorf("something went wrong getting genre by id"),
+		errStruct := errs.NewErrorStruct(
+			errs.ServerError,
+			fmt.Errorf("something went wrong getting genre by id"),
 		)
 		return models.Genre{}, errStruct
 	}
 	return genre, errs.ErrorStruct{}
 }
 
-//still needs changing
+// still needs changing
 // POST GENRE
 func (r *GenreRepository) PostGenre(ctx context.Context, req models.Genre) (models.Genre, errs.ErrorStruct) {
 
@@ -93,7 +92,7 @@ func (r *GenreRepository) PostGenre(ctx context.Context, req models.Genre) (mode
 			errs.ServerError,
 			errors.New("something went wrong creating a genre"),
 		)
-		return models.Genre{}, errStruct 
+		return models.Genre{}, errStruct
 	}
 	id, err := res.LastInsertId()
 	if err != nil {
@@ -101,10 +100,10 @@ func (r *GenreRepository) PostGenre(ctx context.Context, req models.Genre) (mode
 			errs.ServerError,
 			errors.New("something went wrong creating a genre"),
 		)
-		return models.Genre{}, errStruct 
+		return models.Genre{}, errStruct
 	}
 	req.ID = int(id)
-	return req, errs.ErrorStruct{} 
+	return req, errs.ErrorStruct{}
 }
 
 // DELETE GENRE

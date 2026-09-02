@@ -19,7 +19,6 @@ func NewMovieService(repo *repository.MovieRepository) *MovieService {
 	}
 }
 
-
 // GET ALL MOVIES
 func (s *MovieService) GetMovies(filters models.MovieFilters) ([]models.Movie, error) {
 

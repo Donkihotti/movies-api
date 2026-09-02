@@ -1,10 +1,10 @@
 package api
 
 import (
+	"encoding/json"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/service"
 	"net/http"
-	"encoding/json"
 )
 
 type Handler struct {

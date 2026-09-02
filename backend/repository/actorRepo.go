@@ -21,12 +21,12 @@ func NewActorRepository(db *sql.DB) *ActorRepository {
 }
 
 // GET ALL ACTORS
-//done
+// done
 func (r *ActorRepository) GetActors(name string) ([]models.Actor, errs.ErrorStruct) {
 
 	actors := []models.Actor{}
 	var rows *sql.Rows
-	var errStruct errs.ErrorStruct 
+	var errStruct errs.ErrorStruct
 	var err error
 
 	if name == "" {
@@ -36,7 +36,7 @@ func (r *ActorRepository) GetActors(name string) ([]models.Actor, errs.ErrorStru
 			log.Println(err)
 			errStruct.ErrType = errs.ServerError
 			errStruct.ErrMsg = errors.New("could not fetch actors")
-			return actors, errStruct 
+			return actors, errStruct
 		}
 	} else {
 		name = fmt.Sprintf("%%%s%%", name)
@@ -46,7 +46,7 @@ func (r *ActorRepository) GetActors(name string) ([]models.Actor, errs.ErrorStru
 			log.Println(err)
 			errStruct.ErrType = errs.ServerError
 			errStruct.ErrMsg = errors.New("could not fetch actors")
-			return actors, errStruct 
+			return actors, errStruct
 		}
 	}
 
@@ -63,16 +63,16 @@ func (r *ActorRepository) GetActors(name string) ([]models.Actor, errs.ErrorStru
 			log.Println(err)
 			errStruct.ErrType = errs.ServerError
 			errStruct.ErrMsg = errors.New("could not fetch actors")
-			return nil, errStruct 
+			return nil, errStruct
 		}
 		actors = append(actors, actor)
 	}
 
-	return actors, errs.ErrorStruct{} 
+	return actors, errs.ErrorStruct{}
 }
 
-//GET ACTOR BY ID
-//done
+// GET ACTOR BY ID
+// done
 func (r *ActorRepository) GetActorByID(id int) (models.Actor, errs.ErrorStruct) {
 	var actor models.Actor
 	var errStruct errs.ErrorStruct
@@ -90,12 +90,12 @@ func (r *ActorRepository) GetActorByID(id int) (models.Actor, errs.ErrorStruct) 
 		if errors.Is(err, sql.ErrNoRows) {
 			errStruct.ErrType = errs.NotFound
 			errStruct.ErrMsg = fmt.Errorf("actor not found with id: %v", id)
-			return models.Actor{}, errStruct 
+			return models.Actor{}, errStruct
 		}
 		log.Println(err)
 		return models.Actor{}, errs.ErrorStruct{
 			ErrType: errs.ServerError,
-			ErrMsg: errors.New("something went wrong fetching actor by id"),
+			ErrMsg:  errors.New("something went wrong fetching actor by id"),
 		}
 	}
 
@@ -103,7 +103,7 @@ func (r *ActorRepository) GetActorByID(id int) (models.Actor, errs.ErrorStruct) 
 }
 
 // POST AN ACTOR
-//done
+// done
 func (r *ActorRepository) PostActor(ctx context.Context, req models.Actor) (models.Actor, errs.ErrorStruct) {
 
 	errStruct := errs.ErrorStruct{}
@@ -119,7 +119,7 @@ func (r *ActorRepository) PostActor(ctx context.Context, req models.Actor) (mode
 		log.Println(err)
 		errStruct.ErrType = errs.ServerError
 		errStruct.ErrMsg = errors.New("something went wrong creating an actor")
-		return models.Actor{}, errStruct 
+		return models.Actor{}, errStruct
 	}
 
 	id, err := res.LastInsertId()
@@ -127,11 +127,11 @@ func (r *ActorRepository) PostActor(ctx context.Context, req models.Actor) (mode
 		log.Println(err)
 		errStruct.ErrType = errs.ServerError
 		errStruct.ErrMsg = errors.New("something went wrong creating an actor")
-		return models.Actor{}, errStruct 
+		return models.Actor{}, errStruct
 	}
 
 	req.ID = int(id)
-	return req, errs.ErrorStruct{} 
+	return req, errs.ErrorStruct{}
 
 }
 
@@ -147,7 +147,7 @@ func (r *ActorRepository) DeleteActor(ctx context.Context, id int) errs.ErrorStr
 			errs.ServerError,
 			errors.New("something went wrong deleting actor"),
 		)
-		return errStruct 
+		return errStruct
 	}
 
 	rows, err := res.RowsAffected()
@@ -157,7 +157,7 @@ func (r *ActorRepository) DeleteActor(ctx context.Context, id int) errs.ErrorStr
 			errs.ServerError,
 			errors.New("something went wrong deleting actor"),
 		)
-		return errStruct 
+		return errStruct
 	}
 
 	if rows == 0 {
@@ -166,10 +166,10 @@ func (r *ActorRepository) DeleteActor(ctx context.Context, id int) errs.ErrorStr
 			fmt.Errorf("no matching actors with id: %v", id),
 		)
 
-		return errStruct 
+		return errStruct
 	}
 
-	return errs.ErrorStruct{} 
+	return errs.ErrorStruct{}
 }
 
 // PATCH AN ACTOR
@@ -193,7 +193,7 @@ func (r *ActorRepository) PatchActor(ctx context.Context, req models.PatchActorR
 			errs.ServerError,
 			errors.New("error updating actor"),
 		)
-		return errStruct 
+		return errStruct
 	}
 
 	if rows == 0 {
@@ -201,14 +201,14 @@ func (r *ActorRepository) PatchActor(ctx context.Context, req models.PatchActorR
 			errs.NotFound,
 			fmt.Errorf("actor with id: %v not found", id),
 		)
-		return errStruct 
+		return errStruct
 	}
 
-	return errs.ErrorStruct{} 
+	return errs.ErrorStruct{}
 }
 
 // GET ACTORS BY NAME
-//done
+// done
 func (r *ActorRepository) GetActorsByName(ctx context.Context, Name string) ([]models.Actor, errs.ErrorStruct) {
 
 	errStruct := errs.ErrorStruct{}
@@ -221,7 +221,7 @@ func (r *ActorRepository) GetActorsByName(ctx context.Context, Name string) ([]m
 		log.Println(err)
 		errStruct.ErrType = errs.ServerError
 		errStruct.ErrMsg = fmt.Errorf("error fetching actor by name: %v", Name)
-		return actors, errStruct 
+		return actors, errStruct
 	}
 	defer rows.Close()
 
@@ -236,11 +236,11 @@ func (r *ActorRepository) GetActorsByName(ctx context.Context, Name string) ([]m
 			log.Println(err)
 			errStruct.ErrType = errs.ServerError
 			errStruct.ErrMsg = fmt.Errorf("error fetching actor by name: %v", Name)
-			return []models.Actor{}, errStruct 
+			return []models.Actor{}, errStruct
 		}
 		actors = append(actors, actor)
 	}
-	return actors, errs.ErrorStruct{} 
+	return actors, errs.ErrorStruct{}
 }
 
 // GET ACTORS BY BIRTHDATE
@@ -256,7 +256,7 @@ func (r *ActorRepository) GetActorsByBirthdate(ctx context.Context, birthdate st
 			errs.ServerError,
 			errors.New("something went wrong getting actor by birthdate"),
 		)
-		return []models.Actor{}, errStruct 
+		return []models.Actor{}, errStruct
 	}
 	defer rows.Close()
 
@@ -273,11 +273,11 @@ func (r *ActorRepository) GetActorsByBirthdate(ctx context.Context, birthdate st
 				errs.ServerError,
 				errors.New("something went wrong getting actor by birthday"),
 			)
-			return []models.Actor{}, errStruct 
+			return []models.Actor{}, errStruct
 		}
 		actors = append(actors, actor)
 	}
 
-	return actors, errs.ErrorStruct{} 
+	return actors, errs.ErrorStruct{}
 
 }

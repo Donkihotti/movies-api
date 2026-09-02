@@ -2,16 +2,16 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"log"
 	"net/http"
 	"strconv"
-	"fmt"
-	"errors"
 )
 
-//done
+// done
 func (h *Handler) GenresHandler(w http.ResponseWriter, r *http.Request) {
 
 	genre, errStruct := h.GenreService.GetGenres(r.Context())
@@ -25,7 +25,7 @@ func (h *Handler) GenresHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(genre)
 }
 
-//done
+// done
 func (h *Handler) GenreHandler(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
@@ -52,7 +52,7 @@ func (h *Handler) GenreHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(genre)
 }
 
-//done
+// done
 func (h *Handler) CreateGenre(w http.ResponseWriter, r *http.Request) {
 
 	var req models.Genre
@@ -81,8 +81,8 @@ func (h *Handler) CreateGenre(w http.ResponseWriter, r *http.Request) {
 
 }
 
-//CHANGE
-//not yet done
+// CHANGE
+// not yet done
 func (h *Handler) PatchGenre(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
@@ -113,7 +113,7 @@ func (h *Handler) PatchGenre(w http.ResponseWriter, r *http.Request) {
 	WriteStatus(w, r.Method)
 }
 
-//CHANGE
+// CHANGE
 func (h *Handler) DeleteGenre(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
