@@ -2,19 +2,20 @@ package api
 
 import (
 	"encoding/json"
-	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
+	//"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"log"
 	"net/http"
 	"strconv"
 )
 
+//CHANGE
 func (h *Handler) GenresHandler(w http.ResponseWriter, r *http.Request) {
 
 	genre, err := h.GenreService.GetGenres(r.Context())
 	if err != nil {
 		log.Println(err)
-		WriteErrorStatus(w, err)
+		//WriteErrorStatus(w, err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -22,20 +23,21 @@ func (h *Handler) GenresHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(genre)
 }
 
+//CHANGE
 func (h *Handler) GenreHandler(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)
 	if err != nil {
 		log.Println(err)
-		WriteErrorStatus(w, errs.BadRequest)
+		//WriteErrorStatus(w, errs.BadRequest)
 		return
 	}
 
 	genre, err := h.GenreService.GetGenre(r.Context(), id)
 	if err != nil {
 		log.Println(err)
-		WriteErrorStatus(w, err)
+		//WriteErrorStatus(w, err)
 		return
 	}
 
@@ -44,6 +46,7 @@ func (h *Handler) GenreHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(genre)
 }
 
+//CHANGE
 func (h *Handler) CreateGenre(w http.ResponseWriter, r *http.Request) {
 
 	var req models.Genre
@@ -51,14 +54,14 @@ func (h *Handler) CreateGenre(w http.ResponseWriter, r *http.Request) {
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&req); err != nil {
 		log.Println(err)
-		WriteErrorStatus(w, errs.BadRequest)
+		//WriteErrorStatus(w, errs.BadRequest)
 		return
 	}
 
 	genre, err := h.GenreService.PostGenre(r.Context(), req)
 	if err != nil {
 		log.Println(err)
-		WriteErrorStatus(w, err)
+		//WriteErrorStatus(w, err)
 		return
 	}
 
@@ -68,13 +71,14 @@ func (h *Handler) CreateGenre(w http.ResponseWriter, r *http.Request) {
 
 }
 
+//CHANGE
 func (h *Handler) PatchGenre(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)
 	if err != nil {
 		log.Println(err)
-		WriteErrorStatus(w, errs.BadRequest)
+		//WriteErrorStatus(w, errs.BadRequest)
 		return
 	}
 
@@ -84,34 +88,35 @@ func (h *Handler) PatchGenre(w http.ResponseWriter, r *http.Request) {
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&newGenre); err != nil {
 		log.Println(err)
-		WriteErrorStatus(w, errs.BadRequest)
+		//WriteErrorStatus(w, errs.BadRequest)
 		return
 	}
 
 	err = h.GenreService.PatchGenre(r.Context(), newGenre, id)
 	if err != nil {
 		log.Println(err)
-		WriteErrorStatus(w, err)
+		//WriteErrorStatus(w, err)
 		return
 	}
 
 	WriteStatus(w, r.Method)
 }
 
+//CHANGE
 func (h *Handler) DeleteGenre(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)
 	if err != nil {
 		log.Println(err)
-		WriteErrorStatus(w, errs.BadRequest)
+		//WriteErrorStatus(w, errs.BadRequest)
 		return
 	}
 
 	err = h.GenreService.DeleteGenre(r.Context(), id)
 	if err != nil {
 		log.Println(err)
-		WriteErrorStatus(w, err)
+		//WriteErrorStatus(w, err)
 		return
 	}
 

@@ -21,24 +21,32 @@ func NewActorRepository(db *sql.DB) *ActorRepository {
 }
 
 // GET ALL ACTORS
-func (r *ActorRepository) GetActors(name string) ([]models.Actor, error) {
+//done
+func (r *ActorRepository) GetActors(name string) ([]models.Actor, errs.ErrorStruct) {
 
 	actors := []models.Actor{}
 	var rows *sql.Rows
+	var errStruct errs.ErrorStruct 
 	var err error
 
 	if name == "" {
 		query := "SELECT id, name, birth_date FROM actors"
 		rows, err = r.db.Query(query)
 		if err != nil {
-			return actors, errs.ServerError
+			log.Println(err)
+			errStruct.ErrType = errs.ServerError
+			errStruct.ErrMsg = errors.New("could not fetch actors")
+			return actors, errStruct 
 		}
 	} else {
 		name = fmt.Sprintf("%%%s%%", name)
 		query := "SELECT id, name, birth_date FROM actors WHERE name LIKE ?"
 		rows, err = r.db.Query(query, name)
 		if err != nil {
-			return actors, errs.ServerError
+			log.Println(err)
+			errStruct.ErrType = errs.ServerError
+			errStruct.ErrMsg = errors.New("could not fetch actors")
+			return actors, errStruct 
 		}
 	}
 
@@ -52,17 +60,22 @@ func (r *ActorRepository) GetActors(name string) ([]models.Actor, error) {
 			&actor.BirthDate,
 		)
 		if err != nil {
-			return nil, errs.ServerError
+			log.Println(err)
+			errStruct.ErrType = errs.ServerError
+			errStruct.ErrMsg = errors.New("could not fetch actors")
+			return nil, errStruct 
 		}
 		actors = append(actors, actor)
 	}
 
-	return actors, nil
+	return actors, errs.ErrorStruct{} 
 }
 
-// get actor by id
-func (r *ActorRepository) GetActorByID(id int) (models.Actor, error) {
+//GET ACTOR BY ID
+//done
+func (r *ActorRepository) GetActorByID(id int) (models.Actor, errs.ErrorStruct) {
 	var actor models.Actor
+	var errStruct errs.ErrorStruct
 
 	row := r.db.QueryRow(
 		`SELECT id, name, birth_date
@@ -75,16 +88,25 @@ func (r *ActorRepository) GetActorByID(id int) (models.Actor, error) {
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return models.Actor{}, errs.NotFound
+			errStruct.ErrType = errs.NotFound
+			errStruct.ErrMsg = fmt.Errorf("actor not found with id: %v", id)
+			return models.Actor{}, errStruct 
 		}
-		return models.Actor{}, errs.ServerError
+		log.Println(err)
+		return models.Actor{}, errs.ErrorStruct{
+			ErrType: errs.ServerError,
+			ErrMsg: errors.New("something went wrong fetching actor by id"),
+		}
 	}
 
-	return actor, nil
+	return actor, errs.ErrorStruct{}
 }
 
 // POST AN ACTOR
-func (r *ActorRepository) PostActor(ctx context.Context, req models.Actor) (models.Actor, error) {
+//done
+func (r *ActorRepository) PostActor(ctx context.Context, req models.Actor) (models.Actor, errs.ErrorStruct) {
+
+	errStruct := errs.ErrorStruct{}
 
 	res, err := r.db.ExecContext(
 		ctx,
@@ -94,16 +116,22 @@ func (r *ActorRepository) PostActor(ctx context.Context, req models.Actor) (mode
 	)
 
 	if err != nil {
-		return models.Actor{}, errs.ServerError
+		log.Println(err)
+		errStruct.ErrType = errs.ServerError
+		errStruct.ErrMsg = errors.New("something went wrong creating an actor")
+		return models.Actor{}, errStruct 
 	}
 
 	id, err := res.LastInsertId()
 	if err != nil {
-		return models.Actor{}, errs.ServerError
+		log.Println(err)
+		errStruct.ErrType = errs.ServerError
+		errStruct.ErrMsg = errors.New("something went wrong creating an actor")
+		return models.Actor{}, errStruct 
 	}
 
 	req.ID = int(id)
-	return req, nil
+	return req, errs.ErrorStruct{} 
 
 }
 
@@ -130,36 +158,55 @@ func (r *ActorRepository) DeleteActor(ctx context.Context, id int) error {
 }
 
 // PATCH AN ACTOR
-func (r *ActorRepository) PatchActor(ctx context.Context, req models.PatchActorReq, id int) error {
+func (r *ActorRepository) PatchActor(ctx context.Context, req models.PatchActorReq, id int) errs.ErrorStruct {
 
 	query := `UPDATE actors SET name = COALESCE(?, name), birth_date = COALESCE(?, birth_date) WHERE id = ?`
 	row, err := r.db.ExecContext(ctx, query, req.Name, req.BirthDate, id)
 	if err != nil {
-		return errs.ServerError
+		log.Println(err)
+		errStruct := errs.NewErrorStruct(
+			errs.ServerError,
+			errors.New("error updating actor"),
+		)
+		return errStruct
 	}
+
 	rows, err := row.RowsAffected()
 	if err != nil {
-		return errs.ServerError
+		log.Println(err)
+		errStruct := errs.NewErrorStruct(
+			errs.ServerError,
+			errors.New("error updating actor"),
+		)
+		return errStruct 
 	}
 
 	if rows == 0 {
-		return errs.NotFound
+		errStruct := errs.NewErrorStruct(
+			errs.NotFound,
+			fmt.Errorf("actor with id: %v not found", id),
+		)
+		return errStruct 
 	}
-	return nil
+
+	return errs.ErrorStruct{} 
 }
 
 // GET ACTORS BY NAME
-func (r *ActorRepository) GetActorsByName(ctx context.Context, name string) ([]models.Actor, error) {
+//done
+func (r *ActorRepository) GetActorsByName(ctx context.Context, Name string) ([]models.Actor, errs.ErrorStruct) {
 
+	errStruct := errs.ErrorStruct{}
 	actors := []models.Actor{}
-
-	name = fmt.Sprintf("%%%s%%", name)
-
+	name := fmt.Sprintf("%%%s%%", Name)
 	query := `SELECT id, name, birth_date FROM actors WHERE name LIKE ?`
 
 	rows, err := r.db.QueryContext(ctx, query, name)
 	if err != nil {
-		return actors, errs.ServerError
+		log.Println(err)
+		errStruct.ErrType = errs.ServerError
+		errStruct.ErrMsg = fmt.Errorf("error fetching actor by name: %v", Name)
+		return actors, errStruct 
 	}
 	defer rows.Close()
 
@@ -171,20 +218,20 @@ func (r *ActorRepository) GetActorsByName(ctx context.Context, name string) ([]m
 			&actor.BirthDate,
 		)
 		if err != nil {
-			return []models.Actor{}, errs.ServerError
+			log.Println(err)
+			errStruct.ErrType = errs.ServerError
+			errStruct.ErrMsg = fmt.Errorf("error fetching actor by name: %v", Name)
+			return []models.Actor{}, errStruct 
 		}
 		actors = append(actors, actor)
 	}
-
-	return actors, nil
-
+	return actors, errs.ErrorStruct{} 
 }
 
 // GET ACTORS BY BIRTHDATE
 func (r *ActorRepository) GetActorsByBirthdate(ctx context.Context, birthdate string) ([]models.Actor, error) {
 
 	actors := []models.Actor{}
-
 	query := `SELECT id, name, birth_date FROM actors WHERE birth_date = ?`
 
 	rows, err := r.db.QueryContext(ctx, query, birthdate)

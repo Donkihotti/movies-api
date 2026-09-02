@@ -19,7 +19,6 @@ func NewMovieService(repo *repository.MovieRepository) *MovieService {
 	}
 }
 
-var timeLayout = "2006-01-02"
 
 // GET ALL MOVIES
 func (s *MovieService) GetMovies(filters models.MovieFilters) ([]models.Movie, error) {

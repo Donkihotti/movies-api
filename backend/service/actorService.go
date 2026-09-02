@@ -6,6 +6,9 @@ import (
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/repository"
 	"time"
+	"log"
+	"errors"
+	"fmt"
 )
 
 type ActorService struct {
@@ -18,33 +21,35 @@ func NewActorService(repo *repository.ActorRepository) *ActorService {
 	}
 }
 
-func (as *ActorService) GetActors(name string) ([]models.Actor, error) {
-	actors, err := as.repo.GetActors(name)
-	if err != nil {
-		return nil, err
+const timeLayout = "2006-01-02"
+
+func (as *ActorService) GetActors(name string) ([]models.Actor, errs.ErrorStruct) {
+	actors, errStruct := as.repo.GetActors(name)
+	if errStruct.ErrType != nil {
+		return nil, errStruct
 	}
-	return actors, nil
+	return actors, errs.ErrorStruct{} 
 }
 
-func (as *ActorService) GetActorByID(id int) (models.Actor, error) {
-	actor, err := as.repo.GetActorByID(id)
-	if err != nil {
-		return models.Actor{}, err
+func (as *ActorService) GetActorByID(id int) (models.Actor, errs.ErrorStruct) {
+	actor, errStruct := as.repo.GetActorByID(id)
+	if errStruct.ErrType != nil {
+		return models.Actor{}, errStruct
 	}
-	return actor, nil
+	return actor, errs.ErrorStruct{} 
 }
 
-func (as *ActorService) GetActorsByName(ctx context.Context, name string) ([]models.Actor, error) {
-	actors, err := as.repo.GetActorsByName(ctx, name)
-	if err != nil {
-		return []models.Actor{}, err
+func (as *ActorService) GetActorsByName(ctx context.Context, name string) ([]models.Actor, errs.ErrorStruct) {
+
+        actors, errStruct := as.repo.GetActorsByName(ctx, name)   
+        if errStruct.ErrType != nil {                            
+		return []models.Actor{}, errStruct 
 	}
-	return actors, nil
+	return actors, errs.ErrorStruct{} 
 }
 
 func (as *ActorService) GetActorsByBirthdate(ctx context.Context, birthdate string) ([]models.Actor, error) {
 
-	timeLayout := "2006-01-02"
 	_, err := time.Parse(timeLayout, birthdate)
 	if err != nil {
 		return []models.Actor{}, errs.BadRequest
@@ -57,23 +62,33 @@ func (as *ActorService) GetActorsByBirthdate(ctx context.Context, birthdate stri
 	return actors, nil
 }
 
-func (as *ActorService) PostActor(ctx context.Context, req models.Actor) (models.Actor, error) {
+func (as *ActorService) PostActor(ctx context.Context, req models.Actor) (models.Actor, errs.ErrorStruct) {
 
 	if req.Name == "" || req.BirthDate == "" {
-		return models.Actor{}, errs.BadRequest
+		errStruct := errs.NewErrorStruct(
+			errs.BadRequest,
+			errors.New("empty fields are not allowed when creating an actor"),
+		)
+
+		log.Println(errStruct.Error())
+		return models.Actor{}, errStruct 
 	}
 
-	timeLayout := "2006-01-02"
 	_, err := time.Parse(timeLayout, req.BirthDate)
 	if err != nil {
-		return models.Actor{}, errs.BadRequest
+		log.Println(err)
+		errStruct := errs.NewErrorStruct(
+			errs.BadRequest,
+			fmt.Errorf("invalid time: %v", req.BirthDate),
+		)
+		return models.Actor{}, errStruct 
 	}
 
-	res, err := as.repo.PostActor(ctx, req)
-	if err != nil {
-		return models.Actor{}, err
+	res, errStruct := as.repo.PostActor(ctx, req)
+	if errStruct.ErrType != nil {
+		return models.Actor{}, errStruct 
 	}
-	return res, nil
+	return res, errs.ErrorStruct{} 
 }
 
 func (as *ActorService) DeleteActor(ctx context.Context, id int) error {
@@ -86,15 +101,37 @@ func (as *ActorService) DeleteActor(ctx context.Context, id int) error {
 	return nil
 }
 
-func (as *ActorService) PatchActor(ctx context.Context, req models.PatchActorReq, id int) error {
+//done?
+func (as *ActorService) PatchActor(ctx context.Context, req models.PatchActorReq, id int) errs.ErrorStruct {
 
 	if req.Name == nil && req.BirthDate == nil {
-		return errs.BadRequest
+		errStruct := errs.NewErrorStruct(
+			errs.BadRequest,
+			errors.New("no new values set updating actor"),
+		)
+		log.Println(errStruct.Error())	
+		return errStruct
 	}
 
-	err := as.repo.PatchActor(ctx, req, id)
+	_, err := time.Parse(timeLayout, *req.BirthDate)	
 	if err != nil {
-		return err
+		errStruct := errs.NewErrorStruct(
+			errs.BadRequest,
+			fmt.Errorf("invalid birthdate: %v", *req.BirthDate),
+		)
+		return errStruct
 	}
-	return nil
+
+	errStruct := as.repo.PatchActor(ctx, req, id)
+	if errStruct.ErrType != nil {
+		return errStruct
+	}
+	return errs.ErrorStruct{} 
 }
+
+
+
+
+
+
+

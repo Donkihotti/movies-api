@@ -4,7 +4,7 @@ import (
 	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/service"
 	"net/http"
-	"fmt"
+	"encoding/json"
 )
 
 type Handler struct {
@@ -21,17 +21,25 @@ func NewHandler(MovieService *service.MovieService, GenreService *service.GenreS
 	}
 }
 
-// Write status and print error
-func WriteErrorStatus(w http.ResponseWriter, es ErrorStruct) {
+func WriteErrorStatus(w http.ResponseWriter, es errs.ErrorStruct) {
+
 	switch es.ErrType {
 	case errs.NotFound:
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(es.ErrMsg.Error())
 	case errs.BadRequest:
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(es.ErrMsg.Error())
 	case errs.ServerError:
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(es.ErrMsg.Error())
 	case errs.Conflict:
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusConflict)
+		json.NewEncoder(w).Encode(es.ErrMsg.Error())
 	default:
 		w.WriteHeader(http.StatusInternalServerError)
 	}
@@ -40,14 +48,12 @@ func WriteErrorStatus(w http.ResponseWriter, es ErrorStruct) {
 
 func WriteStatus(w http.ResponseWriter, method string) {
 	switch method {
-	case http.MethodGet:
-		w.WriteHeader(http.StatusOK)
 	case http.MethodPost:
 		w.WriteHeader(http.StatusCreated)
 	case http.MethodDelete, http.MethodPatch:
 		w.WriteHeader(http.StatusNoContent)
 	default:
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusOK) //includes method GET
 	}
 	return
 }
