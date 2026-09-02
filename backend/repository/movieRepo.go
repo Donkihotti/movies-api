@@ -199,7 +199,42 @@ func (r *MovieRepository) PatchMovie(ctx context.Context, movie models.PatchMovi
 	return nil
 }
 
-// DELETE MOVIE
+func (r *MovieRepository) DeleteForceMovie(ctx context.Context, id int) error {
+
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+	return err
+	}
+
+	defer tx.Rollback()
+
+	query := `DELETE FROM movie_genres WHERE movies_id = ?`
+
+	_, err = tx.ExecContext(ctx, query, id)
+	if err != nil {
+	return err
+	}
+
+	query = `DELETE FROM movies WHERE id = ?`
+
+	res, err := tx.ExecContext(ctx, query, id) 
+	if err != nil {
+	return err
+	}
+	
+	rows, err := res.RowsAffected() 
+	if err != nil {
+	return err
+	}
+
+	if rows == 0 {
+	return sql.ErrNoRows
+	}
+
+
+	return tx.Commit()
+}
+
 func (r *MovieRepository) DeleteMovie(ctx context.Context, id int) error {
 
 	query := `DELETE FROM movies WHERE id = ?`

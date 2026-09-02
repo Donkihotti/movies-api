@@ -90,7 +90,16 @@ func (s *MovieService) PatchMovie(ctx context.Context, req models.PatchMovieReq,
 }
 
 // DELETE MOVIE
-func (s *MovieService) DeleteMovie(ctx context.Context, id int) error {
+func (s *MovieService) DeleteMovie(ctx context.Context, id int, force bool) error {
+
+	if force {
+	err := s.repo.DeleteForceMovie(ctx, id); 
+	if err != nil {
+	return err
+	}
+	return nil
+	} 
+
 	if err := s.repo.DeleteMovie(ctx, id); err != nil {
 		return err
 	}
