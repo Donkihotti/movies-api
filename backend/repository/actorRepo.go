@@ -136,25 +136,40 @@ func (r *ActorRepository) PostActor(ctx context.Context, req models.Actor) (mode
 }
 
 // DELETE AN ACTOR
-func (r *ActorRepository) DeleteActor(ctx context.Context, id int) error {
+func (r *ActorRepository) DeleteActor(ctx context.Context, id int) errs.ErrorStruct {
 
 	query := `DELETE FROM actors WHERE id = ?`
 
 	res, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
-		return errs.ServerError
+		log.Println(err)
+		errStruct := errs.NewErrorStruct(
+			errs.ServerError,
+			errors.New("something went wrong deleting actor"),
+		)
+		return errStruct 
 	}
 
 	rows, err := res.RowsAffected()
 	if err != nil {
-		return errs.ServerError
+		log.Println(err)
+		errStruct := errs.NewErrorStruct(
+			errs.ServerError,
+			errors.New("something went wrong deleting actor"),
+		)
+		return errStruct 
 	}
 
 	if rows == 0 {
-		return errs.NotFound
+		errStruct := errs.NewErrorStruct(
+			errs.NotFound,
+			fmt.Errorf("no matching actors with id: %v", id),
+		)
+
+		return errStruct 
 	}
 
-	return nil
+	return errs.ErrorStruct{} 
 }
 
 // PATCH AN ACTOR
@@ -229,19 +244,23 @@ func (r *ActorRepository) GetActorsByName(ctx context.Context, Name string) ([]m
 }
 
 // GET ACTORS BY BIRTHDATE
-func (r *ActorRepository) GetActorsByBirthdate(ctx context.Context, birthdate string) ([]models.Actor, error) {
+func (r *ActorRepository) GetActorsByBirthdate(ctx context.Context, birthdate string) ([]models.Actor, errs.ErrorStruct) {
 
 	actors := []models.Actor{}
 	query := `SELECT id, name, birth_date FROM actors WHERE birth_date = ?`
 
 	rows, err := r.db.QueryContext(ctx, query, birthdate)
 	if err != nil {
-		return []models.Actor{}, errs.ServerError
+		log.Println(err)
+		errStruct := errs.NewErrorStruct(
+			errs.ServerError,
+			errors.New("something went wrong getting actor by birthdate"),
+		)
+		return []models.Actor{}, errStruct 
 	}
 
 	for rows.Next() {
 		var actor models.Actor
-
 		err := rows.Scan(
 			&actor.ID,
 			&actor.Name,
@@ -249,11 +268,15 @@ func (r *ActorRepository) GetActorsByBirthdate(ctx context.Context, birthdate st
 		)
 		if err != nil {
 			log.Println(err)
-			return []models.Actor{}, errs.ServerError
+			errStruct := errs.NewErrorStruct(
+				errs.ServerError,
+				errors.New("something went wrong getting actor by birthday"),
+			)
+			return []models.Actor{}, errStruct 
 		}
 		actors = append(actors, actor)
 	}
 
-	return actors, nil
+	return actors, errs.ErrorStruct{} 
 
 }

@@ -79,17 +79,16 @@ func (h *Handler) GetActorsByBirthdateHandler(w http.ResponseWriter, r *http.Req
 	date := r.PathValue("birthdate")
 	ctx := r.Context()
 
-	actors, err := h.ActorService.GetActorsByBirthdate(ctx, date)
-	if err != nil {
-		log.Println(err)
-		//WriteErrorStatus(w, err)
+	actors, errStruct := h.ActorService.GetActorsByBirthdate(ctx, date)
+	if errStruct.ErrType != nil {
+		log.Println(errStruct.Error())
+		WriteErrorStatus(w, errStruct)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	WriteStatus(w, r.Method)
 	json.NewEncoder(w).Encode(actors)
 }
-
 
 
 //done
@@ -121,32 +120,31 @@ func (h *Handler) PostActor(w http.ResponseWriter, r *http.Request) {
 }
 
 
-
-
-//NEEDS TO CHANGE
+//done
 func (h *Handler) DeleteActorHandler(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)
 	if err != nil {
 		log.Println(err)
-		//WriteErrorStatus(w, errs.BadRequest)
+		errStruct := errs.NewErrorStruct(
+			errs.BadRequest,
+			fmt.Errorf("invalid id: %v", idString),
+		)
+		WriteErrorStatus(w, errStruct)
 		return
 	}
-	err = h.ActorService.DeleteActor(r.Context(), id)
-	if err != nil {
-		log.Println(err)
-		//WriteErrorStatus(w, err)
+	errStruct := h.ActorService.DeleteActor(r.Context(), id)
+	if errStruct.ErrType != nil {
+		log.Println(errStruct.Error())
+		WriteErrorStatus(w, errStruct)
 		return
 	}
 
 	WriteStatus(w, r.Method)
 }
 
-
-
-
-//CHANGE!!
+//done
 func (h *Handler) PatchActorHandler(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
@@ -169,7 +167,7 @@ func (h *Handler) PatchActorHandler(w http.ResponseWriter, r *http.Request) {
 	if err := decoder.Decode(&req); err != nil {
 		log.Println(err)
 		errStruct := errs.NewErrorStruct(
-			errs.ServerError,
+			errs.BadRequest,
 			errors.New("error updating actor"),
 		)
 		WriteErrorStatus(w, errStruct)

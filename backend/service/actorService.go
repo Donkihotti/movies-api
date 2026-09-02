@@ -23,6 +23,7 @@ func NewActorService(repo *repository.ActorRepository) *ActorService {
 
 const timeLayout = "2006-01-02"
 
+//done
 func (as *ActorService) GetActors(name string) ([]models.Actor, errs.ErrorStruct) {
 	actors, errStruct := as.repo.GetActors(name)
 	if errStruct.ErrType != nil {
@@ -31,6 +32,7 @@ func (as *ActorService) GetActors(name string) ([]models.Actor, errs.ErrorStruct
 	return actors, errs.ErrorStruct{} 
 }
 
+//done
 func (as *ActorService) GetActorByID(id int) (models.Actor, errs.ErrorStruct) {
 	actor, errStruct := as.repo.GetActorByID(id)
 	if errStruct.ErrType != nil {
@@ -39,6 +41,7 @@ func (as *ActorService) GetActorByID(id int) (models.Actor, errs.ErrorStruct) {
 	return actor, errs.ErrorStruct{} 
 }
 
+//done
 func (as *ActorService) GetActorsByName(ctx context.Context, name string) ([]models.Actor, errs.ErrorStruct) {
 
         actors, errStruct := as.repo.GetActorsByName(ctx, name)   
@@ -48,20 +51,27 @@ func (as *ActorService) GetActorsByName(ctx context.Context, name string) ([]mod
 	return actors, errs.ErrorStruct{} 
 }
 
-func (as *ActorService) GetActorsByBirthdate(ctx context.Context, birthdate string) ([]models.Actor, error) {
+
+func (as *ActorService) GetActorsByBirthdate(ctx context.Context, birthdate string) ([]models.Actor, errs.ErrorStruct) {
 
 	_, err := time.Parse(timeLayout, birthdate)
 	if err != nil {
-		return []models.Actor{}, errs.BadRequest
+		log.Println(err)
+		errStruct := errs.NewErrorStruct(
+			errs.BadRequest,
+			fmt.Errorf("invalid birthdate: %v", birthdate),
+		)
+		return []models.Actor{}, errStruct 
 	}
 
-	actors, err := as.repo.GetActorsByBirthdate(ctx, birthdate)
-	if err != nil {
-		return []models.Actor{}, err
+	actors, errStruct := as.repo.GetActorsByBirthdate(ctx, birthdate)
+	if errStruct.ErrType != nil {
+		return []models.Actor{}, errStruct
 	}
-	return actors, nil
+	return actors, errs.ErrorStruct{} 
 }
 
+//done
 func (as *ActorService) PostActor(ctx context.Context, req models.Actor) (models.Actor, errs.ErrorStruct) {
 
 	if req.Name == "" || req.BirthDate == "" {
@@ -69,7 +79,6 @@ func (as *ActorService) PostActor(ctx context.Context, req models.Actor) (models
 			errs.BadRequest,
 			errors.New("empty fields are not allowed when creating an actor"),
 		)
-
 		log.Println(errStruct.Error())
 		return models.Actor{}, errStruct 
 	}
@@ -91,17 +100,16 @@ func (as *ActorService) PostActor(ctx context.Context, req models.Actor) (models
 	return res, errs.ErrorStruct{} 
 }
 
-func (as *ActorService) DeleteActor(ctx context.Context, id int) error {
+func (as *ActorService) DeleteActor(ctx context.Context, id int) errs.ErrorStruct {
 
-	err := as.repo.DeleteActor(ctx, id)
-	if err != nil {
-		return err
+	errStruct := as.repo.DeleteActor(ctx, id)
+	if errStruct.ErrType != nil {
+		return errStruct 
 	}
-
-	return nil
+	return errs.ErrorStruct{} 
 }
 
-//done?
+//done
 func (as *ActorService) PatchActor(ctx context.Context, req models.PatchActorReq, id int) errs.ErrorStruct {
 
 	if req.Name == nil && req.BirthDate == nil {
@@ -113,13 +121,15 @@ func (as *ActorService) PatchActor(ctx context.Context, req models.PatchActorReq
 		return errStruct
 	}
 
-	_, err := time.Parse(timeLayout, *req.BirthDate)	
-	if err != nil {
-		errStruct := errs.NewErrorStruct(
-			errs.BadRequest,
-			fmt.Errorf("invalid birthdate: %v", *req.BirthDate),
-		)
-		return errStruct
+	if req.BirthDate != nil {
+		_, err := time.Parse(timeLayout, *req.BirthDate)	
+		if err != nil {
+			errStruct := errs.NewErrorStruct(
+				errs.BadRequest,
+				fmt.Errorf("invalid birthdate: %v", *req.BirthDate),
+			)
+			return errStruct
+		}
 	}
 
 	errStruct := as.repo.PatchActor(ctx, req, id)
