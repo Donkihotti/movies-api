@@ -5,6 +5,7 @@ import (
 	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/repository"
+	"errors"
 )
 
 type GenreService struct {
@@ -17,42 +18,43 @@ func NewGenreService(repo *repository.GenreRepository) *GenreService {
 	}
 }
 
-func (s *GenreService) GetGenres(ctx context.Context) ([]models.Genre, error) {
+func (s *GenreService) GetGenres(ctx context.Context) ([]models.Genre, errs.ErrorStruct) {
 
-	genres, err := s.repo.GetGenres(ctx)
-	if err != nil {
-		return nil, err
+	genres, errStruct := s.repo.GetGenres(ctx)
+	if errStruct.ErrType != nil {
+		return nil, errStruct 
 	}
 
-	return genres, nil
+	return genres, errs.ErrorStruct{} 
 }
 
-func (s *GenreService) GetGenre(ctx context.Context, id int) ([]models.Movie, error) {
+//change
+func (s *GenreService) GetGenre(ctx context.Context, id int) (models.Genre, errs.ErrorStruct) {
 
-	genre, err := s.repo.GetGenre(ctx, id)
-	if err != nil {
-		return nil, err
+	genre, errStruct := s.repo.GetGenre(ctx, id)
+	if errStruct.ErrType != nil {
+		return models.Genre{}, errStruct
 	}
 
-	return genre, nil
+	return genre, errs.ErrorStruct{} 
 }
 
-func (s *GenreService) PostGenre(ctx context.Context, req models.Genre) (models.Genre, error) {
-
-	genre := models.Genre{
-		Genre: req.Genre,
-	}
+func (s *GenreService) PostGenre(ctx context.Context, req models.Genre) (models.Genre, errs.ErrorStruct) {
 
 	if req.Genre == "" {
-		return models.Genre{}, errs.BadRequest
+		errStruct := errs.NewErrorStruct(
+			errs.BadRequest,
+			errors.New("empty fields not allowed when posting genre"),
+		)
+		return models.Genre{}, errStruct  
 	}
 
-	res, err := s.repo.PostGenre(ctx, genre)
-	if err != nil {
-		return models.Genre{}, err
+	res, errStruct := s.repo.PostGenre(ctx, req)
+	if errStruct.ErrType != nil {
+		return models.Genre{}, errStruct 
 	}
 
-	return res, nil
+	return res, errs.ErrorStruct{} 
 }
 
 func (s *GenreService) DeleteGenre(ctx context.Context, id int) error {

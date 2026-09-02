@@ -258,6 +258,7 @@ func (r *ActorRepository) GetActorsByBirthdate(ctx context.Context, birthdate st
 		)
 		return []models.Actor{}, errStruct 
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var actor models.Actor

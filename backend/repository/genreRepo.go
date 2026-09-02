@@ -5,6 +5,9 @@ import (
 	"database/sql"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
+	"log"
+	"errors"
+	"fmt"
 )
 
 type GenreRepository struct {
@@ -18,17 +21,17 @@ func NewGenreRepository(db *sql.DB) *GenreRepository {
 }
 
 // GET ALL GENRES
-func (r *GenreRepository) GetGenres(ctx context.Context) ([]models.Genre, error) {
+func (r *GenreRepository) GetGenres(ctx context.Context) ([]models.Genre, errs.ErrorStruct) {
 
 	genres := []models.Genre{}
-	rows, err := r.db.Query(
-		`
-	SELECT id, genre_name		
-	FROM genres
-	`,
-	)
+	rows, err := r.db.Query("SELECT id, genre_name FROM genres")
 	if err != nil {
-		return nil, errs.ServerError
+		log.Println(err)
+		errStruct := errs.NewErrorStruct(
+			errs.ServerError,
+			errors.New("something went wrong fetching genres"),
+		)
+		return nil, errStruct 
 	}
 	defer rows.Close()
 
@@ -39,62 +42,69 @@ func (r *GenreRepository) GetGenres(ctx context.Context) ([]models.Genre, error)
 			&genre.Genre,
 		)
 		if err != nil {
-			return nil, errs.ServerError
+			log.Println(err)
+			errStruct := errs.NewErrorStruct(
+				errs.ServerError,
+				errors.New("something went wrong fetching genres"),
+			)
+			return nil, errStruct 
 		}
 		genres = append(genres, genre)
 	}
-
-	return genres, nil
+	return genres, errs.ErrorStruct{} 
 }
 
-// GET GENRE BY ID
-func (r *GenreRepository) GetGenre(ctx context.Context, id int) ([]models.Movie, error) {
 
-	movies := []models.Movie{}
+//GET GENRE BY ID
+func (r *GenreRepository) GetGenre(ctx context.Context, id int) (models.Genre, errs.ErrorStruct) {
 
-	query := `SELECT m.id, m.title, m.description, m.release_date, m.duration
-	FROM movies AS m
-	JOIN movie_genres AS mg ON mg.movie_id = m.id
-	JOIN genres AS g ON g.id = mg.genre_id
-	WHERE mg.genre_id = ? 
-	`
+	genre := models.Genre{}
 
-	rows, err := r.db.Query(query, id)
+	query := `SELECT id, genre_name FROM genres WHERE id = ?`	
+	row := r.db.QueryRowContext(ctx, query, id)
+	err := row.Scan(&genre.ID, &genre.Genre) 
+
 	if err != nil {
-		return nil, errs.ServerError
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var movie models.Movie
-		if err := rows.Scan(&movie.ID, &movie.Title, &movie.Description, &movie.ReleaseDate, &movie.Duration); err != nil {
-			return nil, errs.ServerError
+		log.Println(err)
+		if errors.Is(err, sql.ErrNoRows) {
+			errStruct := errs.NewErrorStruct(
+			    errs.NotFound,
+			    fmt.Errorf("no matching genres with id: %v", id),
+		)
+			return models.Genre{}, errStruct
 		}
-		movies = append(movies, movie)
+			errStruct := errs.NewErrorStruct(
+				errs.ServerError,
+				fmt.Errorf("something went wrong getting genre by id"),
+		)
+		return models.Genre{}, errStruct
 	}
-
-	return movies, nil
+	return genre, errs.ErrorStruct{}
 }
 
+//still needs changing
 // POST GENRE
-func (r *GenreRepository) PostGenre(ctx context.Context, genre models.Genre) (models.Genre, error) {
+func (r *GenreRepository) PostGenre(ctx context.Context, req models.Genre) (models.Genre, errs.ErrorStruct) {
 
-	res, err := r.db.ExecContext(
-		ctx,
-		`
-	INSERT INTO genres (genre_name) VALUES (?)
-	`,
-		genre.Genre,
-	)
+	res, err := r.db.ExecContext(ctx, "INSERT INTO genres (genre_name) VALUES (?)", req.Genre)
 	if err != nil {
-		return models.Genre{}, errs.ServerError
+		log.Println(err)
+		errStruct := errs.NewErrorStruct(
+			errs.ServerError,
+			errors.New("something went wrong creating a genre"),
+		)
+		return models.Genre{}, errStruct 
 	}
 	id, err := res.LastInsertId()
 	if err != nil {
-		return models.Genre{}, errs.ServerError
+		errStruct := errs.NewErrorStruct(
+			errs.ServerError,
+			errors.New("something went wrong creating a genre"),
+		)
+		return models.Genre{}, errStruct 
 	}
-	genre.ID = int(id)
-	return genre, nil
+	req.ID = int(id)
+	return req, errs.ErrorStruct{} 
 }
 
 // DELETE GENRE
