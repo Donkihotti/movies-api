@@ -106,7 +106,10 @@ func (r *ActorRepository) GetActorByID(id int) (models.Actor, errs.ErrorStruct) 
 // done
 func (r *ActorRepository) PostActor(ctx context.Context, req models.Actor) (models.Actor, errs.ErrorStruct) {
 
-	errStruct := errs.ErrorStruct{}
+	errStruct := errs.NewErrorStruct(
+		errs.ServerError,
+		errors.New("something went wrong creating an actor"),
+	) 
 
 	res, err := r.db.ExecContext(
 		ctx,
@@ -117,16 +120,12 @@ func (r *ActorRepository) PostActor(ctx context.Context, req models.Actor) (mode
 
 	if err != nil {
 		log.Println(err)
-		errStruct.ErrType = errs.ServerError
-		errStruct.ErrMsg = errors.New("something went wrong creating an actor")
 		return models.Actor{}, errStruct
 	}
 
 	id, err := res.LastInsertId()
 	if err != nil {
 		log.Println(err)
-		errStruct.ErrType = errs.ServerError
-		errStruct.ErrMsg = errors.New("something went wrong creating an actor")
 		return models.Actor{}, errStruct
 	}
 
@@ -138,13 +137,14 @@ func (r *ActorRepository) PostActor(ctx context.Context, req models.Actor) (mode
 
 func (r *ActorRepository) DeleteForceActor(ctx context.Context, id int) errs.ErrorStruct{
 
+	errStruct := errs.NewErrorStruct(
+		errs.ServerError,
+		errors.New("something went wrong deleting actor"),
+	)
+
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		log.Println(err)
-		errStruct := errs.NewErrorStruct(
-			errs.ServerError,
-			errors.New("something went wrong deleting actor"),
-		)
 		return errStruct
 	}
 
@@ -154,10 +154,6 @@ func (r *ActorRepository) DeleteForceActor(ctx context.Context, id int) errs.Err
 	_, err = tx.ExecContext(ctx, query, id)
 	if err != nil {
 		log.Println(err)
-		errStruct := errs.NewErrorStruct(
-			errs.ServerError,
-			errors.New("something went wrong deleting actor"),
-		)
 		return errStruct
 	}
 
@@ -166,30 +162,29 @@ func (r *ActorRepository) DeleteForceActor(ctx context.Context, id int) errs.Err
 	res, err := tx.ExecContext(ctx, query, id)
 	if err != nil {
 		log.Println(err)
-		errStruct := errs.NewErrorStruct(
-			errs.ServerError,
-			errors.New("something went wrong deleting actor"),
-		)
 		return errStruct
 	}
 
 	rows, err := res.RowsAffected()
 	if err != nil {
 		log.Println(err)
-		errStruct := errs.NewErrorStruct(
-			errs.ServerError,
-			errors.New("something went wrong deleting actor"),
-		)
 		return errStruct
 	}
 
 	if rows == 0 {
-		errStruct := errs.NewErrorStruct(
+		errStruct = errs.NewErrorStruct(
 			errs.NotFound,
 			fmt.Errorf("no matching actors with id: %v", id),
 		)
-
 		return errStruct
+	}
+
+	if err := tx.Commit(); err != nil {
+		log.Println(err)
+		return errs.NewErrorStruct(
+			errs.ServerError,
+			errors.New("something went wrong deleting a genre"),
+		)
 	}
 
 	return errs.ErrorStruct{} 
@@ -197,25 +192,22 @@ func (r *ActorRepository) DeleteForceActor(ctx context.Context, id int) errs.Err
 
 func (r *ActorRepository) DeleteActor(ctx context.Context, id int) errs.ErrorStruct {
 
+	errStruct := errs.NewErrorStruct(
+		errs.ServerError,
+		errors.New("something went wrong deleting actor"),
+	)
+	
 	query := `DELETE FROM actors WHERE id = ?`
 
 	res, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
 		log.Println(err)
-		errStruct := errs.NewErrorStruct(
-			errs.ServerError,
-			errors.New("something went wrong deleting actor"),
-		)
 		return errStruct
 	}
 
 	rows, err := res.RowsAffected()
 	if err != nil {
 		log.Println(err)
-		errStruct := errs.NewErrorStruct(
-			errs.ServerError,
-			errors.New("something went wrong deleting actor"),
-		)
 		return errStruct
 	}
 
@@ -228,30 +220,29 @@ func (r *ActorRepository) DeleteActor(ctx context.Context, id int) errs.ErrorStr
 		return errStruct
 	}
 
+
 	return errs.ErrorStruct{}
 }
 
 // PATCH AN ACTOR
 func (r *ActorRepository) PatchActor(ctx context.Context, req models.PatchActorReq, id int) errs.ErrorStruct {
 
+	errStruct := errs.NewErrorStruct(
+		errs.ServerError,
+		errors.New("error updating actor"),
+	)
+
 	query := `UPDATE actors SET name = COALESCE(?, name), birth_date = COALESCE(?, birth_date) WHERE id = ?`
+
 	row, err := r.db.ExecContext(ctx, query, req.Name, req.BirthDate, id)
 	if err != nil {
 		log.Println(err)
-		errStruct := errs.NewErrorStruct(
-			errs.ServerError,
-			errors.New("error updating actor"),
-		)
 		return errStruct
 	}
 
 	rows, err := row.RowsAffected()
 	if err != nil {
 		log.Println(err)
-		errStruct := errs.NewErrorStruct(
-			errs.ServerError,
-			errors.New("error updating actor"),
-		)
 		return errStruct
 	}
 
@@ -270,7 +261,11 @@ func (r *ActorRepository) PatchActor(ctx context.Context, req models.PatchActorR
 // done
 func (r *ActorRepository) GetActorsByName(ctx context.Context, Name string) ([]models.Actor, errs.ErrorStruct) {
 
-	errStruct := errs.ErrorStruct{}
+	errStruct := errs.NewErrorStruct(
+		errs.ServerError,
+		fmt.Errorf("error fetching actor by name %v", Name),
+	) 
+
 	actors := []models.Actor{}
 	name := fmt.Sprintf("%%%s%%", Name)
 	query := `SELECT id, name, birth_date FROM actors WHERE name LIKE ?`
@@ -278,8 +273,6 @@ func (r *ActorRepository) GetActorsByName(ctx context.Context, Name string) ([]m
 	rows, err := r.db.QueryContext(ctx, query, name)
 	if err != nil {
 		log.Println(err)
-		errStruct.ErrType = errs.ServerError
-		errStruct.ErrMsg = fmt.Errorf("error fetching actor by name: %v", Name)
 		return actors, errStruct
 	}
 	defer rows.Close()
@@ -293,8 +286,6 @@ func (r *ActorRepository) GetActorsByName(ctx context.Context, Name string) ([]m
 		)
 		if err != nil {
 			log.Println(err)
-			errStruct.ErrType = errs.ServerError
-			errStruct.ErrMsg = fmt.Errorf("error fetching actor by name: %v", Name)
 			return []models.Actor{}, errStruct
 		}
 		actors = append(actors, actor)
@@ -305,16 +296,17 @@ func (r *ActorRepository) GetActorsByName(ctx context.Context, Name string) ([]m
 // GET ACTORS BY BIRTHDATE
 func (r *ActorRepository) GetActorsByBirthdate(ctx context.Context, birthdate string) ([]models.Actor, errs.ErrorStruct) {
 
+	errStruct := errs.NewErrorStruct(
+		errs.ServerError,
+		errors.New("something went wrong getting actor by birthdate"),
+	)
+
 	actors := []models.Actor{}
 	query := `SELECT id, name, birth_date FROM actors WHERE birth_date = ?`
 
 	rows, err := r.db.QueryContext(ctx, query, birthdate)
 	if err != nil {
 		log.Println(err)
-		errStruct := errs.NewErrorStruct(
-			errs.ServerError,
-			errors.New("something went wrong getting actor by birthdate"),
-		)
 		return []models.Actor{}, errStruct
 	}
 	defer rows.Close()
@@ -328,10 +320,6 @@ func (r *ActorRepository) GetActorsByBirthdate(ctx context.Context, birthdate st
 		)
 		if err != nil {
 			log.Println(err)
-			errStruct := errs.NewErrorStruct(
-				errs.ServerError,
-				errors.New("something went wrong getting actor by birthday"),
-			)
 			return []models.Actor{}, errStruct
 		}
 		actors = append(actors, actor)

@@ -53,7 +53,7 @@ func WriteStatus(w http.ResponseWriter, method string) {
 	case http.MethodDelete, http.MethodPatch:
 		w.WriteHeader(http.StatusNoContent)
 	default:
-		w.WriteHeader(http.StatusOK) //includes method GET
+		w.WriteHeader(http.StatusOK) 
 	}
 	return
 }

@@ -5,7 +5,6 @@ import (
 	"fmt"
 )
 
-// types of possible errors
 var NotFound = errors.New("Not Found")
 var BadRequest = errors.New("Bad request")
 var ServerError = errors.New("Server error")

@@ -2,14 +2,16 @@ package api
 
 import (
 	"encoding/json"
-	//"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"log"
 	"net/http"
 	"strconv"
+	"fmt"
+	"errors"
 )
 
-// CHANGE
+//done 
 // GET ALL MOVIES
 func (h *Handler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -42,22 +44,26 @@ func (h *Handler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(movies)
 }
 
-// CHANGE
+//done
 // GET MOVIE BY ID
 func (h *Handler) MovieHandler(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)
 	if err != nil {
-		log.Printf("Invalid id: %v\n", idString)
-		//WriteErrorStatus(w, errs.BadRequest)
+		log.Println(err)
+		errStruct := errs.NewErrorStruct(
+			errs.BadRequest,
+			fmt.Errorf("invalid id: %v", idString),
+		)
+		WriteErrorStatus(w, errStruct)
 		return
 	}
 
-	movie, err := h.MovieService.GetMovieByID(id)
-	if err != nil {
-		log.Println(err)
-		//WriteErrorStatus(w, err)
+	movie, errStruct := h.MovieService.GetMovieByID(id)
+	if errStruct.ErrType != nil {
+		log.Println(errStruct.Error())
+		WriteErrorStatus(w, errStruct)
 		return
 	}
 
@@ -66,7 +72,7 @@ func (h *Handler) MovieHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(movie)
 }
 
-// CHANGE
+//done 
 // POST MOVIE
 func (h *Handler) CreateMovie(w http.ResponseWriter, r *http.Request) {
 
@@ -76,14 +82,18 @@ func (h *Handler) CreateMovie(w http.ResponseWriter, r *http.Request) {
 
 	if err := decoder.Decode(&req); err != nil {
 		log.Println(err)
-		//WriteErrorStatus(w, errs.BadRequest)
+		errStruct := errs.NewErrorStruct(
+			errs.BadRequest,
+			errors.New("something went wrong creating a movie"),
+		)
+		WriteErrorStatus(w, errStruct) 
 		return
 	}
 
-	movie, err := h.MovieService.PostMovie(r.Context(), req)
-	if err != nil {
-		log.Println(err)
-		//WriteErrorStatus(w, errs.BadRequest)
+	movie, errStruct := h.MovieService.PostMovie(r.Context(), req)
+	if errStruct.ErrType != nil {
+		log.Println(errStruct.Error())
+		WriteErrorStatus(w, errStruct)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -99,7 +109,11 @@ func (h *Handler) PatchMovie(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(idString)
 	if err != nil {
 		log.Println(err)
-		//WriteErrorStatus(w, errs.BadRequest)
+		errStruct := errs.NewErrorStruct(
+			errs.BadRequest,
+			fmt.Errorf("invalid id: %v", idString),
+		)
+		WriteErrorStatus(w, errStruct)
 		return
 	}
 
@@ -107,11 +121,18 @@ func (h *Handler) PatchMovie(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
-	decoder.Decode(&req)
-
-	if err := h.MovieService.PatchMovie(r.Context(), req, id); err != nil {
+	if err := decoder.Decode(&req); err != nil {
 		log.Println(err)
-		//WriteErrorStatus(w, err)
+		errStruct := errs.NewErrorStruct(
+			errs.BadRequest,
+			errors.New("something went wrong updating movie"),
+		)
+		WriteErrorStatus(w, errStruct)
+		return
+	}
+
+	if errStruct := h.MovieService.PatchMovie(r.Context(), req, id); errStruct.ErrType != nil {
+		WriteErrorStatus(w, errStruct)
 		return
 	}
 	WriteStatus(w, r.Method)
@@ -125,15 +146,17 @@ func (h *Handler) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(idString)
 	if err != nil {
 		log.Println(err)
-		//WriteErrorStatus(w, errs.BadRequest)
+		WriteErrorStatus(w, errs.ErrorStruct{
+			errs.BadRequest,
+			fmt.Errorf("invalid id: %v", idString),
+		}) 
 		return
 	}
 
 	force := r.URL.Query().Get("force") == "true"
 
-	if err := h.MovieService.DeleteMovie(r.Context(), id, force); err != nil {
-		log.Println(err)
-		//WriteErrorStatus(w, err)
+	if errStruct := h.MovieService.DeleteMovie(r.Context(), id, force); errStruct.ErrType != nil {
+		WriteErrorStatus(w, errStruct)
 		return
 	}
 
@@ -147,15 +170,17 @@ func (h *Handler) MovieActors(w http.ResponseWriter, r *http.Request) {
 	idString := r.PathValue("movieId")
 	id, err := strconv.Atoi(idString)
 	if err != nil {
-		log.Printf("Invalid id: %v\n", idString)
-		//WriteErrorStatus(w, errs.BadRequest)
+		log.Println(err)
+		WriteErrorStatus(w, errs.ErrorStruct{
+			errs.BadRequest,
+			fmt.Errorf("invalid id: %v", idString),
+		}) 
 		return
 	}
 
-	actors, err := h.MovieService.MovieActors(r.Context(), id)
-	if err != nil {
-		log.Println(err)
-		//WriteErrorStatus(w, err)
+	actors, errStruct := h.MovieService.MovieActors(r.Context(), id)
+	if errStruct.ErrType != nil {
+		WriteErrorStatus(w, errStruct)
 		return
 	}
 

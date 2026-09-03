@@ -9,6 +9,7 @@ import (
 	"time"
 	"log"
 	"fmt"
+	"errors"
 )
 
 type MovieService struct {
@@ -21,6 +22,7 @@ func NewMovieService(repo *repository.MovieRepository) *MovieService {
 	}
 }
 
+//done
 // GET ALL MOVIES
 func (s *MovieService) GetMovies(filters models.MovieFilters) ([]models.Movie, errs.ErrorStruct) {
 
@@ -43,86 +45,111 @@ func (s *MovieService) GetMovies(filters models.MovieFilters) ([]models.Movie, e
 }
 
 // GET MOVIE BY ID
-func (s *MovieService) GetMovieByID(id int) (models.Movie, error) {
+func (s *MovieService) GetMovieByID(id int) (models.Movie, errs.ErrorStruct) {
 
-	movie, err := s.repo.GetMovieByID(id)
-	if err != nil {
-		return models.Movie{}, err
+	movie, errStruct := s.repo.GetMovieByID(id)
+	if errStruct.ErrType != nil {
+		return models.Movie{}, errStruct
 	}
-	return movie, nil
+	return movie, errs.ErrorStruct{} 
 }
 
-func (s *MovieService) PostMovie(ctx context.Context, req models.Movie) (models.Movie, error) {
+//POST movie
+func (s *MovieService) PostMovie(ctx context.Context, req models.Movie) (models.Movie, errs.ErrorStruct) {
 
 	if req.Title == "" || req.Description == "" || req.ReleaseDate == "" || req.Duration == "" {
-		return models.Movie{}, errs.BadRequest
+		errStruct := errs.NewErrorStruct(
+			errs.BadRequest,
+			errors.New("cannot create movie with empty fields"),
+		)
+		return models.Movie{}, errStruct 
 	}
 
 	releaseDate := req.ReleaseDate
 	_, err := time.Parse(timeLayout, releaseDate)
 	if err != nil {
-		return models.Movie{}, errs.BadRequest
+		errStruct := errs.NewErrorStruct(
+			errs.BadRequest,
+			fmt.Errorf("invalid release date: %v", req.ReleaseDate),
+		)
+		return models.Movie{}, errStruct 
 	}
 
-	movie, err := s.repo.PostMovie(ctx, req)
-	if err != nil {
-		return models.Movie{}, err
+	movie, errStruct := s.repo.PostMovie(ctx, req)
+	if errStruct.ErrType != nil {
+		return models.Movie{}, errStruct
 	}
 
-	return movie, nil
+	return movie, errs.ErrorStruct{}
 }
 
 // PATCH MOVIE
-func (s *MovieService) PatchMovie(ctx context.Context, req models.PatchMovieReq, id int) error {
+func (s *MovieService) PatchMovie(ctx context.Context, req models.PatchMovieReq, id int) errs.ErrorStruct {
 
 	if req.Title == nil && req.Description == nil && req.ReleaseDate == nil && req.Duration == nil {
-		return errs.BadRequest
+		errStruct := errs.NewErrorStruct(
+			errs.BadRequest,
+			errors.New("cannot update movie with no values"),
+		)
+		return errStruct 
 	}
 
 	if req.ReleaseDate != nil {
 		releaseDate := *req.ReleaseDate
 		_, err := time.Parse(timeLayout, releaseDate)
 		if err != nil {
-			return errs.BadRequest
+		errStruct := errs.NewErrorStruct(
+			errs.BadRequest,
+			fmt.Errorf("invalid releasedate: %v", *req.ReleaseDate),
+		)
+			return errStruct 
 		}
 	}
 
-	err := s.repo.PatchMovie(ctx, req, id)
-	if err != nil {
-		return err
+	errStruct := s.repo.PatchMovie(ctx, req, id)
+	if errStruct.ErrType != nil {
+		return errStruct 
 	}
-	return nil
+	return errs.ErrorStruct{} 
 }
 
 // DELETE MOVIE
-func (s *MovieService) DeleteMovie(ctx context.Context, id int, force bool) error {
+func (s *MovieService) DeleteMovie(ctx context.Context, id int, force bool) errs.ErrorStruct {
 
 	if force {
-	err := s.repo.DeleteForceMovie(ctx, id); 
-	if err != nil {
-	return err
+	errStruct := s.repo.DeleteForceMovie(ctx, id) 
+	if errStruct.ErrType != nil {
+	return errStruct 
 	}
-	return nil
+	return errs.ErrorStruct{} 
 	} 
 
-	if err := s.repo.DeleteMovie(ctx, id); err != nil {
-		return err
+	if errStruct := s.repo.DeleteMovie(ctx, id); errStruct.ErrType != nil {
+		return errStruct 
 	}
-	return nil
+	return errs.ErrorStruct{} 
 }
 
-func (s *MovieService) MovieActors(ctx context.Context, id int) ([]models.Actor, error) {
+func (s *MovieService) MovieActors(ctx context.Context, id int) ([]models.Actor, errs.ErrorStruct) {
 
 	if id <= 0 {
-		return []models.Actor{}, errs.BadRequest
+		errStruct := errs.NewErrorStruct(
+			errs.BadRequest,
+			fmt.Errorf("invalid id: %v", id),
+		)
+		return []models.Actor{}, errStruct 
 	}
 
-	actors, err := s.repo.MovieActors(ctx, id)
-	if err != nil {
-		return []models.Actor{}, errs.ServerError
+	actors, errStruct := s.repo.MovieActors(ctx, id)
+	if errStruct.ErrType != nil {
+		return []models.Actor{}, errStruct 
 	}
 	if len(actors) == 0 {
-		return actors, errs.NotFound
+		errStruct := errs.NewErrorStruct(
+			errs.NotFound,
+			errors.New("no actors found"),
+		)	
+		return actors, errStruct 
 	}
-	return actors, nil
+	return actors, errs.ErrorStruct{} 
 }

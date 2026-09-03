@@ -23,14 +23,16 @@ func NewGenreRepository(db *sql.DB) *GenreRepository {
 // GET ALL GENRES
 func (r *GenreRepository) GetGenres(ctx context.Context) ([]models.Genre, errs.ErrorStruct) {
 
+	errStruct := errs.NewErrorStruct(
+		errs.ServerError,
+		errors.New("something went wrong fetching genres"),
+	)
+	
 	genres := []models.Genre{}
+
 	rows, err := r.db.Query("SELECT id, genre_name FROM genres")
 	if err != nil {
 		log.Println(err)
-		errStruct := errs.NewErrorStruct(
-			errs.ServerError,
-			errors.New("something went wrong fetching genres"),
-		)
 		return nil, errStruct
 	}
 	defer rows.Close()
@@ -43,10 +45,6 @@ func (r *GenreRepository) GetGenres(ctx context.Context) ([]models.Genre, errs.E
 		)
 		if err != nil {
 			log.Println(err)
-			errStruct := errs.NewErrorStruct(
-				errs.ServerError,
-				errors.New("something went wrong fetching genres"),
-			)
 			return nil, errStruct
 		}
 		genres = append(genres, genre)
@@ -83,21 +81,20 @@ func (r *GenreRepository) GetGenre(ctx context.Context, id int) (models.Genre, e
 
 func (r *GenreRepository) PostGenre(ctx context.Context, req models.Genre) (models.Genre, errs.ErrorStruct) {
 
+	errStruct := errs.NewErrorStruct(
+		errs.ServerError,
+		errors.New("something went wrong creating a genre"),
+	)
+
 	res, err := r.db.ExecContext(ctx, "INSERT INTO genres (genre_name) VALUES (?)", req.Genre)
 	if err != nil {
 		log.Println(err)
-		errStruct := errs.NewErrorStruct(
-			errs.ServerError,
-			errors.New("something went wrong creating a genre"),
-		)
 		return models.Genre{}, errStruct
 	}
+
 	id, err := res.LastInsertId()
 	if err != nil {
-		errStruct := errs.NewErrorStruct(
-			errs.ServerError,
-			errors.New("something went wrong creating a genre"),
-		)
+		log.Println(err)
 		return models.Genre{}, errStruct
 	}
 	req.ID = int(id)
@@ -106,13 +103,14 @@ func (r *GenreRepository) PostGenre(ctx context.Context, req models.Genre) (mode
 
 func (r *GenreRepository) DeleteForceGenre(ctx context.Context, id int) errs.ErrorStruct {
 
+	errStruct := errs.NewErrorStruct(
+		errs.ServerError,
+		errors.New("something went wrong deleting a genre"),
+	)
+	
 	tx, err := r.db.BeginTx(ctx, nil) 
 	if err != nil {
 		log.Println(err)
-		errStruct := errs.NewErrorStruct(
-			errs.ServerError,
-			errors.New("something went wrong deleting a genre"),
-		)
 		return errStruct 
 	}
 
@@ -123,10 +121,6 @@ func (r *GenreRepository) DeleteForceGenre(ctx context.Context, id int) errs.Err
 	_, err = tx.ExecContext(ctx, query, id)
 	if err != nil {
 		log.Println(err)
-		errStruct := errs.NewErrorStruct(
-			errs.ServerError,
-			errors.New("something went wrong deleting a genre"),
-		)
 		return errStruct 
 	}
 
@@ -135,20 +129,12 @@ func (r *GenreRepository) DeleteForceGenre(ctx context.Context, id int) errs.Err
 	res, err := tx.ExecContext(ctx, query, id) 
 	if err != nil {
 		log.Println(err)
-		errStruct := errs.NewErrorStruct(
-			errs.ServerError,
-			errors.New("something went wrong deleting a genre"),
-		)
 		return errStruct 
 	}
 
 	rows, err := res.RowsAffected() 
 	if err != nil {
 		log.Println(err)
-		errStruct := errs.NewErrorStruct(
-			errs.ServerError,
-			errors.New("something went wrong deleting a genre"),
-		)
 		return errStruct 
 	}
 
@@ -160,10 +146,23 @@ func (r *GenreRepository) DeleteForceGenre(ctx context.Context, id int) errs.Err
 		return errStruct 
 	}
 
+	if err := tx.Commit(); err != nil {
+		log.Println(err)
+		return errs.NewErrorStruct(
+			errs.ServerError,
+			errors.New("something went wrong deleting a genre"),
+		)
+	}
+
 	return errs.ErrorStruct{} 
 }
 
 func (r *GenreRepository) DeleteGenre(ctx context.Context, id int) errs.ErrorStruct {
+
+	errStruct := errs.NewErrorStruct(
+		errs.ServerError,
+		errors.New("something went wrong deleting a genre"),
+	)
 
 	res, err := r.db.ExecContext(
 		ctx,
@@ -171,25 +170,18 @@ func (r *GenreRepository) DeleteGenre(ctx context.Context, id int) errs.ErrorStr
 		id,
 	)
 	if err != nil {
-		errStruct := errs.NewErrorStruct(
-			errs.ServerError,
-			errors.New("something went wrong deleting a genre"),
-		)
+		log.Println(err)
 		return errStruct 
 	}
 
 	rows, err := res.RowsAffected()
-
 	if err != nil {
-		errStruct := errs.NewErrorStruct(
-			errs.ServerError,
-			errors.New("something went wrong deleting a genre"),
-		)
+		log.Println(err)
 		return errStruct 
 	}
 
 	if rows == 0 {
-			errStruct := errs.NewErrorStruct(
+			errStruct = errs.NewErrorStruct(
 				errs.NotFound,
 				fmt.Errorf("no matching genres with id: %v", id),
 			)
@@ -201,6 +193,11 @@ func (r *GenreRepository) DeleteGenre(ctx context.Context, id int) errs.ErrorStr
 // PATCH GENRE
 func (r *GenreRepository) PatchGenre(ctx context.Context, newGenre models.Genre, id int) errs.ErrorStruct {
 
+	errStruct := errs.NewErrorStruct(
+		errs.ServerError,
+		errors.New("something went wrong updating a genre"),
+	)
+
 	res, err := r.db.ExecContext(
 		ctx,
 		`UPDATE genres SET genre_name = ? WHERE id = ?`,
@@ -209,23 +206,16 @@ func (r *GenreRepository) PatchGenre(ctx context.Context, newGenre models.Genre,
 	)
 	if err != nil {
 		log.Println(err)
-		errStruct := errs.NewErrorStruct(
-			errs.ServerError,
-			errors.New("something went wrong updating a genre"),
-		)
 		return errStruct 
 	}
 
 	rows, err := res.RowsAffected()
 	if err != nil {
-		errStruct := errs.NewErrorStruct(
-			errs.ServerError,
-			errors.New("something went wrong updating a genre"),
-		)
+		log.Println(err)
 		return errStruct 
 	}
 	if rows == 0 {
-		errStruct := errs.NewErrorStruct(
+		errStruct = errs.NewErrorStruct(
 			errs.NotFound,
 			fmt.Errorf("genre not found with id: %v", id), 
 		)

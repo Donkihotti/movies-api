@@ -8,6 +8,7 @@ import (
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"log"
 	"strings"
+	"fmt"
 )
 
 type MovieRepository struct {
@@ -21,11 +22,17 @@ func NewMovieRepository(db *sql.DB) *MovieRepository {
 }
 
 // POST A MOVIE
-func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (models.Movie, error) {
+func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (models.Movie, errs.ErrorStruct) {
+
+	errStruct := errs.NewErrorStruct(
+		errs.ServerError,
+		errors.New("something went wrong creating a movie"),
+	)
 
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return models.Movie{}, errs.ServerError
+		log.Println(err)
+		return models.Movie{}, errStruct 
 	}
 
 	defer tx.Rollback()
@@ -41,12 +48,14 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 		req.Duration,
 	)
 	if err != nil {
-		return models.Movie{}, errs.ServerError
+		log.Println(err)
+		return models.Movie{}, errStruct 
 	}
 
 	id, err := res.LastInsertId()
 	if err != nil {
-		return models.Movie{}, err
+		log.Println(err)
+		return models.Movie{}, errStruct
 	}
 
 	req.ID = int(id)
@@ -63,7 +72,8 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 			genreId,
 		)
 		if err != nil {
-			return models.Movie{}, errs.ServerError
+			log.Println(err)
+			return models.Movie{}, errStruct 
 		}
 	}
 
@@ -77,15 +87,17 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 			actorId,
 		)
 		if err != nil {
-			return models.Movie{}, err
+			log.Println(err)
+			return models.Movie{}, errStruct 
 		}
 	}
 
 	if err := tx.Commit(); err != nil {
-		return models.Movie{}, errs.ServerError
+			log.Println(err)
+			return models.Movie{}, errStruct 
 	}
 
-	return req, nil
+	return req, errs.ErrorStruct{} 
 }
 
 // GET ALL MOVIES
@@ -94,6 +106,11 @@ func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie
 	movies := []models.Movie{}
 	var conditions []string
 	args := []any{}
+
+	errStruct := errs.NewErrorStruct(
+		errs.ServerError,
+		errors.New("something went wrong getting movies"),
+	)
 
 	query := `SELECT m.id, m.title, m.description, m.release_date, m.duration FROM movies m`
 
@@ -121,10 +138,6 @@ func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie
 	rows, err := r.db.Query(query, args...)
 	if err != nil {
 		log.Println(err)
-		errStruct := errs.NewErrorStruct(
-			errs.ServerError,
-			errors.New("something went wrong getting movies"),
-		)
 		return nil, errStruct 
 	}
 
@@ -141,10 +154,6 @@ func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie
 		)
 		if err != nil {
 			log.Println(err)
-			errStruct := errs.NewErrorStruct(
-				errs.ServerError,
-				errors.New("something went wrong getting movies"),
-			)
 			return nil, errStruct 
 		}
 		movies = append(movies, movie)
@@ -153,7 +162,7 @@ func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie
 }
 
 // GET MOVIE BY ID
-func (r *MovieRepository) GetMovieByID(id int) (models.Movie, error) {
+func (r *MovieRepository) GetMovieByID(id int) (models.Movie, errs.ErrorStruct) {
 
 	var movie models.Movie
 
@@ -169,16 +178,29 @@ func (r *MovieRepository) GetMovieByID(id int) (models.Movie, error) {
 		&movie.Duration,
 	)
 	if err != nil {
+		log.Println(err)
+		errStruct := errs.ErrorStruct{}
 		if errors.Is(err, sql.ErrNoRows) {
-			return models.Movie{}, errs.NotFound
+			errStruct.ErrType = errs.NotFound
+			errStruct.ErrMsg = fmt.Errorf("could not get movie with id: %v", id)
+			return models.Movie{}, errStruct 
 		}
-		return models.Movie{}, errs.ServerError
+		errStruct.ErrType = errs.ServerError
+		errStruct.ErrMsg = errors.New("something went wrong getting movie") 
+		return models.Movie{}, errStruct 
 	}
-	return movie, nil
+
+	return movie, errs.ErrorStruct{} 
 }
 
 // PATCH MOVIE
-func (r *MovieRepository) PatchMovie(ctx context.Context, movie models.PatchMovieReq, id int) error {
+func (r *MovieRepository) PatchMovie(ctx context.Context, movie models.PatchMovieReq, id int) errs.ErrorStruct {
+
+	errStruct := errs.NewErrorStruct(
+		errs.ServerError,
+		errors.New("something went wrong updating movies"),
+	)
+
 
 	res, err := r.db.ExecContext(
 		ctx,
@@ -192,85 +214,126 @@ func (r *MovieRepository) PatchMovie(ctx context.Context, movie models.PatchMovi
 		id,
 	)
 	if err != nil {
-		return errs.ServerError
+		log.Println(err)
+		return errStruct 
 	}
 
 	rows, err := res.RowsAffected()
 	if err != nil {
-		return errs.ServerError
+		log.Println(err)
+		return errStruct 
 	}
 	if rows == 0 {
-		return errs.NotFound
+		log.Println(err)
+		errStruct.ErrType = errs.NotFound
+		errStruct.ErrMsg = fmt.Errorf("could not update movie with id: %v", id) 
+		return errStruct 
 	}
-	return nil
+	return errs.ErrorStruct{} 
 }
 
-func (r *MovieRepository) DeleteForceMovie(ctx context.Context, id int) error {
+func (r *MovieRepository) DeleteForceMovie(ctx context.Context, id int) errs.ErrorStruct {
+
+	errStruct := errs.NewErrorStruct(
+		errs.ServerError,
+		errors.New("something went wrong deleting a movie"),
+	)
 
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-	return err
+		log.Println(err)
+		return errStruct 
 	}
 
 	defer tx.Rollback()
 
-	query := `DELETE FROM movie_genres WHERE movies_id = ?`
+	query := `DELETE FROM movie_genres WHERE movie_id = ?`
 
 	_, err = tx.ExecContext(ctx, query, id)
 	if err != nil {
-	return err
+		log.Println(err)
+		return errStruct 
 	}
 
 	query = `DELETE FROM movies WHERE id = ?`
 
 	res, err := tx.ExecContext(ctx, query, id) 
 	if err != nil {
-	return err
+		log.Println(err)
+		return errStruct 
 	}
 	
 	rows, err := res.RowsAffected() 
 	if err != nil {
-	return err
+		log.Println(err)
+		return errStruct 
 	}
 
 	if rows == 0 {
-	return sql.ErrNoRows
+		errStruct = errs.NewErrorStruct(
+			errs.NotFound,
+			fmt.Errorf("could not delete movie with id: %v", id),
+		)
+		return errStruct 
+	}
+	
+	 if err := tx.Commit(); err != nil {
+		log.Println(err)
+		return errStruct
 	}
 
 
-	return tx.Commit()
+
+
+	return errs.ErrorStruct{} 
 }
 
-func (r *MovieRepository) DeleteMovie(ctx context.Context, id int) error {
+func (r *MovieRepository) DeleteMovie(ctx context.Context, id int) errs.ErrorStruct {
+
+	errStruct := errs.NewErrorStruct(
+		errs.ServerError,
+		errors.New("something went wrong deleting a movie"),
+	)
 
 	query := `DELETE FROM movies WHERE id = ?`
 
 	res, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
-		return errs.ServerError
+		log.Println(err)
+		return errStruct 
 	}
 
 	rows, err := res.RowsAffected()
 	if err != nil {
-		log.Println("Error fetching movies")
-		return errs.ServerError
+		log.Println(err)
+		return errStruct 
 	}
 
 	if rows == 0 {
-		return errs.NotFound
+		errStruct = errs.NewErrorStruct(
+			errs.NotFound,
+			fmt.Errorf("could not delete movie with id: %v", id),
+		)
+		return errStruct 
 	}
 
-	return nil
+	return errs.ErrorStruct{} 
 }
 
 // GET ACTORS FROM A GIVEN MOVIE
-func (r *MovieRepository) MovieActors(ctx context.Context, id int) ([]models.Actor, error) {
+func (r *MovieRepository) MovieActors(ctx context.Context, id int) ([]models.Actor, errs.ErrorStruct) {
+
+	errStruct := errs.NewErrorStruct(
+		errs.ServerError,
+		errors.New("something went wrong getting actors"),
+	)
 
 	query := `SELECT a.id, a.name, a.birth_date FROM actors a JOIN movie_actors ma ON ma.actor_id = a.id WHERE ma.movie_id = ?`
 
 	rows, err := r.db.QueryContext(ctx, query, id)
 	if err != nil {
-		return []models.Actor{}, errs.ServerError
+		log.Println(err)
+		return []models.Actor{}, errStruct 
 	}
 	defer rows.Close()
 	actors := []models.Actor{}
@@ -284,9 +347,10 @@ func (r *MovieRepository) MovieActors(ctx context.Context, id int) ([]models.Act
 			&actor.BirthDate,
 		)
 		if err != nil {
-			return []models.Actor{}, errs.ServerError
+			log.Println(err)
+			return []models.Actor{}, errStruct 
 		}
 		actors = append(actors, actor)
 	}
-	return actors, nil
+	return actors, errs.ErrorStruct{} 
 }
