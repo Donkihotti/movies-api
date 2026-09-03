@@ -107,7 +107,40 @@ func (r *ActorRepository) PostActor(ctx context.Context, req models.Actor) (mode
 
 }
 
-// DELETE AN ACTOR
+func (r *ActorRepository) DeleteForceActor(ctx context.Context, id int) error {
+
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+	return err
+	}
+
+	defer tx.Rollback()
+	query := `DELETE FROM movie_actors WHERE actor_id = ?`
+
+	_, err = tx.ExecContext(ctx, query, id)
+	if err != nil {
+	return err
+	}
+
+	query = `DELETE FROM actors WHERE id = ?`
+
+	res, err := tx.ExecContext(ctx, query, id)
+	if err != nil {
+	return err 
+	}
+
+	rows, err := res.RowsAffected()
+	if err != nil {
+	return err 
+	}
+
+	if rows == 0 {
+	return sql.ErrNoRows
+	}
+
+	return nil
+}
+
 func (r *ActorRepository) DeleteActor(ctx context.Context, id int) error {
 
 	query := `DELETE FROM actors WHERE id = ?`

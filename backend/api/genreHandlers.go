@@ -100,6 +100,8 @@ func (h *Handler) PatchGenre(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) DeleteGenre(w http.ResponseWriter, r *http.Request) {
 
+	force := r.URL.Query().Get("force") == "true" 
+
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)
 	if err != nil {
@@ -108,7 +110,7 @@ func (h *Handler) DeleteGenre(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.GenreService.DeleteGenre(r.Context(), id)
+	err = h.GenreService.DeleteGenre(r.Context(), id, force)
 	if err != nil {
 		log.Println(err)
 		WriteErrorStatus(w, err)

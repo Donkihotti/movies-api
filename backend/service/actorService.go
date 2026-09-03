@@ -76,7 +76,15 @@ func (as *ActorService) PostActor(ctx context.Context, req models.Actor) (models
 	return res, nil
 }
 
-func (as *ActorService) DeleteActor(ctx context.Context, id int) error {
+func (as *ActorService) DeleteActor(ctx context.Context, id int, force bool) error {
+
+	if force {
+	err := as.repo.DeleteForceActor(ctx, id)
+	if err != nil {
+		return err
+	}
+	return nil
+	}
 
 	err := as.repo.DeleteActor(ctx, id)
 	if err != nil {

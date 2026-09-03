@@ -97,7 +97,41 @@ func (r *GenreRepository) PostGenre(ctx context.Context, genre models.Genre) (mo
 	return genre, nil
 }
 
-// DELETE GENRE
+func (r *GenreRepository) DeleteForceGenre(ctx context.Context, id int) error {
+
+	tx, err := r.db.BeginTx(ctx, nil) 
+	if err != nil {
+	return err
+	}
+
+	defer tx.Rollback()
+	
+	query := `DELETE FROM movie_genres WHERE genre_id = ?`
+
+	_, err = tx.ExecContext(ctx, query, id)
+	if err != nil {
+	return err
+	}
+
+	query = `DELETE FROM genres WHERE id = ?`
+
+	res, err := tx.ExecContext(ctx, query, id) 
+	if err != nil {
+	return err
+	}
+
+	rows, err := res.RowsAffected() 
+	if err != nil {
+	return err
+	}
+
+	if rows == 0 {
+	return sql.ErrNoRows
+	}
+
+	return nil
+}
+
 func (r *GenreRepository) DeleteGenre(ctx context.Context, id int) error {
 
 	res, err := r.db.ExecContext(

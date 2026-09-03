@@ -114,7 +114,10 @@ func (h *Handler) DeleteActorHandler(w http.ResponseWriter, r *http.Request) {
 		WriteErrorStatus(w, errs.BadRequest)
 		return
 	}
-	err = h.ActorService.DeleteActor(r.Context(), id)
+
+	force := r.URL.Query().Get("force") == "true"
+
+	err = h.ActorService.DeleteActor(r.Context(), id, force)
 	if err != nil {
 		log.Println(err)
 		WriteErrorStatus(w, err)
