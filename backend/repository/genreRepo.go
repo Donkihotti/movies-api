@@ -81,8 +81,6 @@ func (r *GenreRepository) GetGenre(ctx context.Context, id int) (models.Genre, e
 	return genre, errs.ErrorStruct{}
 }
 
-// still needs changing
-// POST GENRE
 func (r *GenreRepository) PostGenre(ctx context.Context, req models.Genre) (models.Genre, errs.ErrorStruct) {
 
 	res, err := r.db.ExecContext(ctx, "INSERT INTO genres (genre_name) VALUES (?)", req.Genre)
@@ -106,7 +104,65 @@ func (r *GenreRepository) PostGenre(ctx context.Context, req models.Genre) (mode
 	return req, errs.ErrorStruct{}
 }
 
-// DELETE GENRE
+func (r *GenreRepository) DeleteForceGenre(ctx context.Context, id int) errs.ErrorStruct {
+
+	tx, err := r.db.BeginTx(ctx, nil) 
+	if err != nil {
+		log.Println(err)
+		errStruct := errs.NewErrorStruct(
+			errs.ServerError,
+			errors.New("something went wrong deleting a genre"),
+		)
+		return errStruct 
+	}
+
+	defer tx.Rollback()
+	
+	query := `DELETE FROM movie_genres WHERE genre_id = ?`
+
+	_, err = tx.ExecContext(ctx, query, id)
+	if err != nil {
+		log.Println(err)
+		errStruct := errs.NewErrorStruct(
+			errs.ServerError,
+			errors.New("something went wrong deleting a genre"),
+		)
+		return errStruct 
+	}
+
+	query = `DELETE FROM genres WHERE id = ?`
+
+	res, err := tx.ExecContext(ctx, query, id) 
+	if err != nil {
+		log.Println(err)
+		errStruct := errs.NewErrorStruct(
+			errs.ServerError,
+			errors.New("something went wrong deleting a genre"),
+		)
+		return errStruct 
+	}
+
+	rows, err := res.RowsAffected() 
+	if err != nil {
+		log.Println(err)
+		errStruct := errs.NewErrorStruct(
+			errs.ServerError,
+			errors.New("something went wrong deleting a genre"),
+		)
+		return errStruct 
+	}
+
+	if rows == 0 {
+		errStruct := errs.NewErrorStruct(
+			errs.NotFound,
+			fmt.Errorf("could not delete genre with id: %v", id),
+		)
+		return errStruct 
+	}
+
+	return errs.ErrorStruct{} 
+}
+
 func (r *GenreRepository) DeleteGenre(ctx context.Context, id int) errs.ErrorStruct {
 
 	res, err := r.db.ExecContext(

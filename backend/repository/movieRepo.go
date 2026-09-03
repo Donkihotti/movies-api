@@ -120,8 +120,14 @@ func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie
 
 	rows, err := r.db.Query(query, args...)
 	if err != nil {
-		return nil, errs.ServerError
+		log.Println(err)
+		errStruct := errs.NewErrorStruct(
+			errs.ServerError,
+			errors.New("something went wrong getting movies"),
+		)
+		return nil, errStruct 
 	}
+
 	defer rows.Close()
 
 	for rows.Next() {
@@ -134,11 +140,16 @@ func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie
 			&movie.Duration,
 		)
 		if err != nil {
-			return nil, errs.ServerError
+			log.Println(err)
+			errStruct := errs.NewErrorStruct(
+				errs.ServerError,
+				errors.New("something went wrong getting movies"),
+			)
+			return nil, errStruct 
 		}
 		movies = append(movies, movie)
 	}
-	return movies, nil
+	return movies, errs.ErrorStruct{} 
 }
 
 // GET MOVIE BY ID
@@ -194,7 +205,42 @@ func (r *MovieRepository) PatchMovie(ctx context.Context, movie models.PatchMovi
 	return nil
 }
 
-// DELETE MOVIE
+func (r *MovieRepository) DeleteForceMovie(ctx context.Context, id int) error {
+
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+	return err
+	}
+
+	defer tx.Rollback()
+
+	query := `DELETE FROM movie_genres WHERE movies_id = ?`
+
+	_, err = tx.ExecContext(ctx, query, id)
+	if err != nil {
+	return err
+	}
+
+	query = `DELETE FROM movies WHERE id = ?`
+
+	res, err := tx.ExecContext(ctx, query, id) 
+	if err != nil {
+	return err
+	}
+	
+	rows, err := res.RowsAffected() 
+	if err != nil {
+	return err
+	}
+
+	if rows == 0 {
+	return sql.ErrNoRows
+	}
+
+
+	return tx.Commit()
+}
+
 func (r *MovieRepository) DeleteMovie(ctx context.Context, id int) error {
 
 	query := `DELETE FROM movies WHERE id = ?`

@@ -7,6 +7,8 @@ import (
 	"gitea.kood.tech/timdanielfiander/movies-api.git/repository"
 	"strconv"
 	"time"
+	"log"
+	"fmt"
 )
 
 type MovieService struct {
@@ -23,11 +25,11 @@ func NewMovieService(repo *repository.MovieRepository) *MovieService {
 func (s *MovieService) GetMovies(filters models.MovieFilters) ([]models.Movie, errs.ErrorStruct) {
 
 	if filters.ReleaseYear != nil {
-		if year, err := strconv.Atoi(*filters.ReleaseYear); err != nil {
+		if _, err := strconv.Atoi(*filters.ReleaseYear); err != nil {
 			log.Println(err)
 			errStruct := errs.NewErrorStruct(
 				errs.BadRequest,
-				fmt.Error("invalid releaseyear: %v", year),
+				fmt.Errorf("invalid releaseyear: %v", *filters.ReleaseYear),
 			)
 			return []models.Movie{}, errStruct 
 		}
@@ -93,7 +95,16 @@ func (s *MovieService) PatchMovie(ctx context.Context, req models.PatchMovieReq,
 }
 
 // DELETE MOVIE
-func (s *MovieService) DeleteMovie(ctx context.Context, id int) error {
+func (s *MovieService) DeleteMovie(ctx context.Context, id int, force bool) error {
+
+	if force {
+	err := s.repo.DeleteForceMovie(ctx, id); 
+	if err != nil {
+	return err
+	}
+	return nil
+	} 
+
 	if err := s.repo.DeleteMovie(ctx, id); err != nil {
 		return err
 	}

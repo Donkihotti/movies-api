@@ -135,7 +135,66 @@ func (r *ActorRepository) PostActor(ctx context.Context, req models.Actor) (mode
 
 }
 
-// DELETE AN ACTOR
+
+func (r *ActorRepository) DeleteForceActor(ctx context.Context, id int) errs.ErrorStruct{
+
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		log.Println(err)
+		errStruct := errs.NewErrorStruct(
+			errs.ServerError,
+			errors.New("something went wrong deleting actor"),
+		)
+		return errStruct
+	}
+
+	defer tx.Rollback()
+	query := `DELETE FROM movie_actors WHERE actor_id = ?`
+
+	_, err = tx.ExecContext(ctx, query, id)
+	if err != nil {
+		log.Println(err)
+		errStruct := errs.NewErrorStruct(
+			errs.ServerError,
+			errors.New("something went wrong deleting actor"),
+		)
+		return errStruct
+	}
+
+	query = `DELETE FROM actors WHERE id = ?`
+
+	res, err := tx.ExecContext(ctx, query, id)
+	if err != nil {
+		log.Println(err)
+		errStruct := errs.NewErrorStruct(
+			errs.ServerError,
+			errors.New("something went wrong deleting actor"),
+		)
+		return errStruct
+	}
+
+	rows, err := res.RowsAffected()
+	if err != nil {
+		log.Println(err)
+		errStruct := errs.NewErrorStruct(
+			errs.ServerError,
+			errors.New("something went wrong deleting actor"),
+		)
+		return errStruct
+	}
+
+	if rows == 0 {
+		errStruct := errs.NewErrorStruct(
+			errs.NotFound,
+			fmt.Errorf("no matching actors with id: %v", id),
+		)
+
+		return errStruct
+	}
+
+	return errs.ErrorStruct{} 
+}
+
 func (r *ActorRepository) DeleteActor(ctx context.Context, id int) errs.ErrorStruct {
 
 	query := `DELETE FROM actors WHERE id = ?`

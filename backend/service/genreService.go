@@ -6,6 +6,7 @@ import (
 	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/repository"
+	"log"
 )
 
 type GenreService struct {
@@ -57,14 +58,24 @@ func (s *GenreService) PostGenre(ctx context.Context, req models.Genre) (models.
 	return res, errs.ErrorStruct{}
 }
 
-func (s *GenreService) DeleteGenre(ctx context.Context, id int) errs.ErrorStruct {
+func (s *GenreService) DeleteGenre(ctx context.Context, id int, force bool) errs.ErrorStruct {
+
+	if force {
+	errStruct := s.repo.DeleteForceGenre(ctx, id)
+	if errStruct.ErrType != nil {
+		log.Println(errStruct.Error())
+		return errStruct
+	}
+	return errStruct
+	}
 
 	errStruct := s.repo.DeleteGenre(ctx, id)
 	if errStruct.ErrType != nil {
 		return errStruct 
 	}
-	return errs.ErrorStruct{} 
+	return errStruct
 }
+
 
 func (s *GenreService) PatchGenre(ctx context.Context, newGenre models.Genre, id int) errs.ErrorStruct {
 

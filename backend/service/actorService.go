@@ -23,7 +23,6 @@ func NewActorService(repo *repository.ActorRepository) *ActorService {
 
 const timeLayout = "2006-01-02"
 
-// done
 func (as *ActorService) GetActors(name string) ([]models.Actor, errs.ErrorStruct) {
 	actors, errStruct := as.repo.GetActors(name)
 	if errStruct.ErrType != nil {
@@ -32,7 +31,6 @@ func (as *ActorService) GetActors(name string) ([]models.Actor, errs.ErrorStruct
 	return actors, errs.ErrorStruct{}
 }
 
-// done
 func (as *ActorService) GetActorByID(id int) (models.Actor, errs.ErrorStruct) {
 	actor, errStruct := as.repo.GetActorByID(id)
 	if errStruct.ErrType != nil {
@@ -41,7 +39,6 @@ func (as *ActorService) GetActorByID(id int) (models.Actor, errs.ErrorStruct) {
 	return actor, errs.ErrorStruct{}
 }
 
-// done
 func (as *ActorService) GetActorsByName(ctx context.Context, name string) ([]models.Actor, errs.ErrorStruct) {
 
 	actors, errStruct := as.repo.GetActorsByName(ctx, name)
@@ -70,7 +67,6 @@ func (as *ActorService) GetActorsByBirthdate(ctx context.Context, birthdate stri
 	return actors, errs.ErrorStruct{}
 }
 
-// done
 func (as *ActorService) PostActor(ctx context.Context, req models.Actor) (models.Actor, errs.ErrorStruct) {
 
 	if req.Name == "" || req.BirthDate == "" {
@@ -99,7 +95,15 @@ func (as *ActorService) PostActor(ctx context.Context, req models.Actor) (models
 	return res, errs.ErrorStruct{}
 }
 
-func (as *ActorService) DeleteActor(ctx context.Context, id int) errs.ErrorStruct {
+func (as *ActorService) DeleteActor(ctx context.Context, id int, force bool) errs.ErrorStruct {
+
+	if force {
+	errStruct := as.repo.DeleteForceActor(ctx, id)
+	if errStruct.ErrType != nil {
+		return errStruct
+	}
+	return errs.ErrorStruct{}
+	}
 
 	errStruct := as.repo.DeleteActor(ctx, id)
 	if errStruct.ErrType != nil {
@@ -108,7 +112,6 @@ func (as *ActorService) DeleteActor(ctx context.Context, id int) errs.ErrorStruc
 	return errs.ErrorStruct{}
 }
 
-// done
 func (as *ActorService) PatchActor(ctx context.Context, req models.PatchActorReq, id int) errs.ErrorStruct {
 
 	if req.Name == nil && req.BirthDate == nil {

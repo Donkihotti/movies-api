@@ -11,9 +11,8 @@ var BadRequest = errors.New("Bad request")
 var ServerError = errors.New("Server error")
 var Conflict = errors.New("Conflict")
 
-// error struct which will get the detailed message what went wrong
 type ErrorStruct struct {
-	ErrType error //type of the error above
+	ErrType error 
 	ErrMsg  error
 }
 
