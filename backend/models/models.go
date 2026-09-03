@@ -43,5 +43,4 @@ type MovieFilters struct {
 	ActorID     *string
 	GenreID     *string
 	ReleaseYear *string
-	Duration    *string
 }

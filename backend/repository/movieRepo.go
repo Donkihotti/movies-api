@@ -89,7 +89,7 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 }
 
 // GET ALL MOVIES
-func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie, error) {
+func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie, errs.ErrorStruct) {
 
 	movies := []models.Movie{}
 	var conditions []string
@@ -113,11 +113,6 @@ func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie
 		conditions = append(conditions, "m.release_date LIKE ?")
 		args = append(args, "%"+*filters.ReleaseYear+"%")
 	}
-
-	//	if filters.Duration != nil {
-	//		conditions = append(conditions, "m.duration = ?")
-	//		args = append(args, "%" + *filters.Duration + "%")
-	//	}
 
 	if len(conditions) > 0 {
 		query += " WHERE " + strings.Join(conditions, " AND ")

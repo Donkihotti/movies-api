@@ -20,19 +20,24 @@ func NewMovieService(repo *repository.MovieRepository) *MovieService {
 }
 
 // GET ALL MOVIES
-func (s *MovieService) GetMovies(filters models.MovieFilters) ([]models.Movie, error) {
+func (s *MovieService) GetMovies(filters models.MovieFilters) ([]models.Movie, errs.ErrorStruct) {
 
 	if filters.ReleaseYear != nil {
-		if _, err := strconv.Atoi(*filters.ReleaseYear); err != nil {
-			return []models.Movie{}, errs.BadRequest
+		if year, err := strconv.Atoi(*filters.ReleaseYear); err != nil {
+			log.Println(err)
+			errStruct := errs.NewErrorStruct(
+				errs.BadRequest,
+				fmt.Error("invalid releaseyear: %v", year),
+			)
+			return []models.Movie{}, errStruct 
 		}
 	}
 
-	movies, err := s.repo.GetMovies(filters)
-	if err != nil {
-		return nil, err
+	movies, errStruct := s.repo.GetMovies(filters)
+	if errStruct.ErrType != nil {
+		return nil, errStruct 
 	}
-	return movies, nil
+	return movies, errs.ErrorStruct{} 
 }
 
 // GET MOVIE BY ID

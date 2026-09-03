@@ -18,7 +18,6 @@ func (h *Handler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 	actorid := q.Get("actor")
 	genreid := q.Get("genre")
 	releaseYear := q.Get("releaseYear")
-	duration := q.Get("duration")
 
 	filters := models.MovieFilters{}
 	if actorid != "" {
@@ -30,14 +29,11 @@ func (h *Handler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 	if releaseYear != "" {
 		filters.ReleaseYear = &releaseYear
 	}
-	if duration != "" {
-		filters.Duration = &duration
-	}
 
-	movies, err := h.MovieService.GetMovies(filters)
-	if err != nil {
-		log.Println(err)
-		//WriteErrorStatus(w, err)
+	movies, errStruct := h.MovieService.GetMovies(filters)
+	if errStruct.ErrType != nil {
+		log.Println(errStruct.Error())
+		WriteErrorStatus(w, errStruct)
 		return
 	}
 

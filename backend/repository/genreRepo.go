@@ -107,7 +107,7 @@ func (r *GenreRepository) PostGenre(ctx context.Context, req models.Genre) (mode
 }
 
 // DELETE GENRE
-func (r *GenreRepository) DeleteGenre(ctx context.Context, id int) error {
+func (r *GenreRepository) DeleteGenre(ctx context.Context, id int) errs.ErrorStruct {
 
 	res, err := r.db.ExecContext(
 		ctx,
@@ -115,21 +115,35 @@ func (r *GenreRepository) DeleteGenre(ctx context.Context, id int) error {
 		id,
 	)
 	if err != nil {
-		return errs.ServerError
+		errStruct := errs.NewErrorStruct(
+			errs.ServerError,
+			errors.New("something went wrong deleting a genre"),
+		)
+		return errStruct 
 	}
+
 	rows, err := res.RowsAffected()
+
 	if err != nil {
-		return errs.ServerError
+		errStruct := errs.NewErrorStruct(
+			errs.ServerError,
+			errors.New("something went wrong deleting a genre"),
+		)
+		return errStruct 
 	}
 
 	if rows == 0 {
-		return errs.NotFound
+			errStruct := errs.NewErrorStruct(
+				errs.NotFound,
+				fmt.Errorf("no matching genres with id: %v", id),
+			)
+		return errStruct
 	}
-	return nil
+	return errs.ErrorStruct{} 
 }
 
 // PATCH GENRE
-func (r *GenreRepository) PatchGenre(ctx context.Context, newGenre models.Genre, id int) error {
+func (r *GenreRepository) PatchGenre(ctx context.Context, newGenre models.Genre, id int) errs.ErrorStruct {
 
 	res, err := r.db.ExecContext(
 		ctx,
@@ -138,17 +152,28 @@ func (r *GenreRepository) PatchGenre(ctx context.Context, newGenre models.Genre,
 		id,
 	)
 	if err != nil {
-		return errs.ServerError
+		log.Println(err)
+		errStruct := errs.NewErrorStruct(
+			errs.ServerError,
+			errors.New("something went wrong updating a genre"),
+		)
+		return errStruct 
 	}
 
 	rows, err := res.RowsAffected()
 	if err != nil {
-		return errs.ServerError
+		errStruct := errs.NewErrorStruct(
+			errs.ServerError,
+			errors.New("something went wrong updating a genre"),
+		)
+		return errStruct 
 	}
 	if rows == 0 {
-		return errs.NotFound
+		errStruct := errs.NewErrorStruct(
+			errs.NotFound,
+			fmt.Errorf("genre not found with id: %v", id), 
+		)
+		return errStruct 
 	}
-
-	return nil
-
+	return errs.ErrorStruct{}
 }

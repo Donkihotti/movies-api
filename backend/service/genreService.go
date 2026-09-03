@@ -57,25 +57,28 @@ func (s *GenreService) PostGenre(ctx context.Context, req models.Genre) (models.
 	return res, errs.ErrorStruct{}
 }
 
-func (s *GenreService) DeleteGenre(ctx context.Context, id int) error {
+func (s *GenreService) DeleteGenre(ctx context.Context, id int) errs.ErrorStruct {
 
-	err := s.repo.DeleteGenre(ctx, id)
-	if err != nil {
-		return err
+	errStruct := s.repo.DeleteGenre(ctx, id)
+	if errStruct.ErrType != nil {
+		return errStruct 
 	}
-	return nil
+	return errs.ErrorStruct{} 
 }
 
-func (s *GenreService) PatchGenre(ctx context.Context, newGenre models.Genre, id int) error {
+func (s *GenreService) PatchGenre(ctx context.Context, newGenre models.Genre, id int) errs.ErrorStruct {
 
 	if newGenre.Genre == "" {
-		return errs.BadRequest
+		errStruct := errs.NewErrorStruct(
+			errs.BadRequest,
+			errors.New("cannot update genre with empty field"),
+		)
+		return errStruct 
 	}
 
-	err := s.repo.PatchGenre(ctx, newGenre, id)
-	if err != nil {
-		return err
+	errStruct := s.repo.PatchGenre(ctx, newGenre, id)
+	if errStruct.ErrType != nil {
+		return errStruct 
 	}
-	return nil
-
+	return errs.ErrorStruct{} 
 }

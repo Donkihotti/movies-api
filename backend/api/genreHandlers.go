@@ -89,7 +89,11 @@ func (h *Handler) PatchGenre(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(idString)
 	if err != nil {
 		log.Println(err)
-		//WriteErrorStatus(w, errs.BadRequest)
+		errStruct := errs.NewErrorStruct(
+			errs.BadRequest,
+			fmt.Errorf("invalid id: %v", idString),
+		)
+		WriteErrorStatus(w, errStruct)
 		return
 	}
 
@@ -99,17 +103,20 @@ func (h *Handler) PatchGenre(w http.ResponseWriter, r *http.Request) {
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&newGenre); err != nil {
 		log.Println(err)
-		//WriteErrorStatus(w, errs.BadRequest)
+		errStruct := errs.NewErrorStruct(
+			errs.BadRequest,
+			errors.New("something went wrong creating a genre"),
+		)
+		WriteErrorStatus(w, errStruct)
 		return
 	}
 
-	err = h.GenreService.PatchGenre(r.Context(), newGenre, id)
-	if err != nil {
-		log.Println(err)
-		//WriteErrorStatus(w, err)
+	errStruct := h.GenreService.PatchGenre(r.Context(), newGenre, id)
+	if errStruct.ErrType != nil {
+		log.Println(errStruct.Error())
+		WriteErrorStatus(w, errStruct)
 		return
 	}
-
 	WriteStatus(w, r.Method)
 }
 
@@ -120,16 +127,19 @@ func (h *Handler) DeleteGenre(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(idString)
 	if err != nil {
 		log.Println(err)
-		//WriteErrorStatus(w, errs.BadRequest)
+		errStruct := errs.NewErrorStruct(
+			errs.BadRequest,
+			fmt.Errorf("invalid id: %v", idString),
+		)
+		WriteErrorStatus(w, errStruct)
 		return
 	}
 
-	err = h.GenreService.DeleteGenre(r.Context(), id)
-	if err != nil {
-		log.Println(err)
-		//WriteErrorStatus(w, err)
+	errStruct := h.GenreService.DeleteGenre(r.Context(), id)
+	if errStruct.ErrType != nil {
+		log.Println(errStruct.Error())
+		WriteErrorStatus(w, errStruct)
 		return
 	}
-
 	WriteStatus(w, r.Method)
 }
