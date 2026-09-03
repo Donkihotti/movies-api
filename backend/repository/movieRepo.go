@@ -208,7 +208,7 @@ func (r *MovieRepository) DeleteForceMovie(ctx context.Context, id int) error {
 
 	defer tx.Rollback()
 
-	query := `DELETE FROM movie_genres WHERE movies_id = ?`
+	query := `DELETE FROM movie_genres WHERE movie_id = ?`
 
 	_, err = tx.ExecContext(ctx, query, id)
 	if err != nil {
