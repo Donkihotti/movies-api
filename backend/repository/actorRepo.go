@@ -5,9 +5,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
+	
 	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
-	"log"
 )
 
 type ActorRepository struct {
@@ -20,8 +21,6 @@ func NewActorRepository(db *sql.DB) *ActorRepository {
 	}
 }
 
-// GET ALL ACTORS
-// done
 func (r *ActorRepository) GetActors(name string) ([]models.Actor, errs.ErrorStruct) {
 
 	actors := []models.Actor{}
@@ -71,8 +70,7 @@ func (r *ActorRepository) GetActors(name string) ([]models.Actor, errs.ErrorStru
 	return actors, errs.ErrorStruct{}
 }
 
-// GET ACTOR BY ID
-// done
+
 func (r *ActorRepository) GetActorByID(id int) (models.Actor, errs.ErrorStruct) {
 	var actor models.Actor
 	var errStruct errs.ErrorStruct
@@ -102,8 +100,6 @@ func (r *ActorRepository) GetActorByID(id int) (models.Actor, errs.ErrorStruct) 
 	return actor, errs.ErrorStruct{}
 }
 
-// POST AN ACTOR
-// done
 func (r *ActorRepository) PostActor(ctx context.Context, req models.Actor) (models.Actor, errs.ErrorStruct) {
 
 	errStruct := errs.NewErrorStruct(
@@ -224,7 +220,6 @@ func (r *ActorRepository) DeleteActor(ctx context.Context, id int) errs.ErrorStr
 	return errs.ErrorStruct{}
 }
 
-// PATCH AN ACTOR
 func (r *ActorRepository) PatchActor(ctx context.Context, req models.PatchActorReq, id int) errs.ErrorStruct {
 
 	errStruct := errs.NewErrorStruct(
@@ -257,8 +252,6 @@ func (r *ActorRepository) PatchActor(ctx context.Context, req models.PatchActorR
 	return errs.ErrorStruct{}
 }
 
-// GET ACTORS BY NAME
-// done
 func (r *ActorRepository) GetActorsByName(ctx context.Context, Name string) ([]models.Actor, errs.ErrorStruct) {
 
 	errStruct := errs.NewErrorStruct(
@@ -293,7 +286,7 @@ func (r *ActorRepository) GetActorsByName(ctx context.Context, Name string) ([]m
 	return actors, errs.ErrorStruct{}
 }
 
-// GET ACTORS BY BIRTHDATE
+
 func (r *ActorRepository) GetActorsByBirthdate(ctx context.Context, birthdate string) ([]models.Actor, errs.ErrorStruct) {
 
 	errStruct := errs.NewErrorStruct(

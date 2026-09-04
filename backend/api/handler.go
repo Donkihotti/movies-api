@@ -48,12 +48,14 @@ func WriteErrorStatus(w http.ResponseWriter, es errs.ErrorStruct) {
 
 func WriteStatus(w http.ResponseWriter, method string) {
 	switch method {
+	case http.MethodGet, http.MethodPatch:
+		w.WriteHeader(http.StatusOK)
 	case http.MethodPost:
 		w.WriteHeader(http.StatusCreated)
-	case http.MethodDelete, http.MethodPatch:
+	case http.MethodDelete: 
 		w.WriteHeader(http.StatusNoContent)
 	default:
-		w.WriteHeader(http.StatusOK) 
+		w.WriteHeader(http.StatusOK)
 	}
 	return
 }

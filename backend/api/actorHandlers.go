@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
-	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"log"
 	"net/http"
 	"strconv"
+
+	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 )
 
-// done
 func (h *Handler) GetActorsHandler(w http.ResponseWriter, r *http.Request) {
 
 	name := r.URL.Query().Get("name")
@@ -28,7 +28,6 @@ func (h *Handler) GetActorsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(actors)
 }
 
-// done
 func (h *Handler) GetActorHandler(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
@@ -54,7 +53,6 @@ func (h *Handler) GetActorHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(actor)
 }
 
-// done
 func (h *Handler) GetActorsByNameHandler(w http.ResponseWriter, r *http.Request) {
 
 	name := r.PathValue("name")
@@ -72,7 +70,6 @@ func (h *Handler) GetActorsByNameHandler(w http.ResponseWriter, r *http.Request)
 	json.NewEncoder(w).Encode(actors)
 }
 
-// NEEDS TO CHANGE
 func (h *Handler) GetActorsByBirthdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	date := r.PathValue("birthdate")
@@ -89,7 +86,6 @@ func (h *Handler) GetActorsByBirthdateHandler(w http.ResponseWriter, r *http.Req
 	json.NewEncoder(w).Encode(actors)
 }
 
-// done
 func (h *Handler) PostActor(w http.ResponseWriter, r *http.Request) {
 
 	var req models.Actor
@@ -117,7 +113,6 @@ func (h *Handler) PostActor(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(actor)
 }
 
-// done
 func (h *Handler) DeleteActorHandler(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
@@ -142,7 +137,6 @@ func (h *Handler) DeleteActorHandler(w http.ResponseWriter, r *http.Request) {
 	WriteStatus(w, r.Method)
 }
 
-// done
 func (h *Handler) PatchActorHandler(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")

@@ -1,4 +1,4 @@
-INSERT OR IGNORE INTO genres (id, genre_name) VALUES
+INSERT OR IGNORE INTO genres (id, name) VALUES
     (1, 'Action'),
     (2, 'Drama'),
     (3, 'Comedy'),

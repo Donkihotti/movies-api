@@ -5,14 +5,16 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
+
 	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
-	"log"
 )
 
 type GenreRepository struct {
 	db *sql.DB
 }
+
 
 func NewGenreRepository(db *sql.DB) *GenreRepository {
 	return &GenreRepository{
@@ -20,17 +22,16 @@ func NewGenreRepository(db *sql.DB) *GenreRepository {
 	}
 }
 
-// GET ALL GENRES
 func (r *GenreRepository) GetGenres(ctx context.Context) ([]models.Genre, errs.ErrorStruct) {
 
 	errStruct := errs.NewErrorStruct(
-		errs.ServerError,
-		errors.New("something went wrong fetching genres"),
+	errs.ServerError,
+	errors.New("something went wrong fetching genres"),
 	)
-	
+
 	genres := []models.Genre{}
 
-	rows, err := r.db.Query("SELECT id, genre_name FROM genres")
+	rows, err := r.db.Query("SELECT id, name FROM genres")
 	if err != nil {
 		log.Println(err)
 		return nil, errStruct
@@ -52,12 +53,11 @@ func (r *GenreRepository) GetGenres(ctx context.Context) ([]models.Genre, errs.E
 	return genres, errs.ErrorStruct{}
 }
 
-// GET GENRE BY ID
+
 func (r *GenreRepository) GetGenre(ctx context.Context, id int) (models.Genre, errs.ErrorStruct) {
 
-	genre := models.Genre{}
-
-	query := `SELECT id, genre_name FROM genres WHERE id = ?`
+	var genre models.Genre
+	query := `SELECT id, name FROM genres WHERE id = ?`
 	row := r.db.QueryRowContext(ctx, query, id)
 	err := row.Scan(&genre.ID, &genre.Genre)
 
@@ -70,23 +70,25 @@ func (r *GenreRepository) GetGenre(ctx context.Context, id int) (models.Genre, e
 			)
 			return models.Genre{}, errStruct
 		}
-		errStruct := errs.NewErrorStruct(
-			errs.ServerError,
-			fmt.Errorf("something went wrong getting genre by id"),
-		)
-		return models.Genre{}, errStruct
 	}
+	
 	return genre, errs.ErrorStruct{}
 }
+
 
 func (r *GenreRepository) PostGenre(ctx context.Context, req models.Genre) (models.Genre, errs.ErrorStruct) {
 
 	errStruct := errs.NewErrorStruct(
-		errs.ServerError,
-		errors.New("something went wrong creating a genre"),
+	errs.ServerError,
+	errors.New("something went wrong creating a genre"),
 	)
 
-	res, err := r.db.ExecContext(ctx, "INSERT INTO genres (genre_name) VALUES (?)", req.Genre)
+	res, err := r.db.ExecContext(
+	ctx,
+	`INSERT INTO genres (name) VALUES (?)`,
+	req.Genre,
+	)
+
 	if err != nil {
 		log.Println(err)
 		return models.Genre{}, errStruct
@@ -100,6 +102,7 @@ func (r *GenreRepository) PostGenre(ctx context.Context, req models.Genre) (mode
 	req.ID = int(id)
 	return req, errs.ErrorStruct{}
 }
+
 
 func (r *GenreRepository) DeleteForceGenre(ctx context.Context, id int) errs.ErrorStruct {
 
@@ -157,6 +160,7 @@ func (r *GenreRepository) DeleteForceGenre(ctx context.Context, id int) errs.Err
 	return errs.ErrorStruct{} 
 }
 
+
 func (r *GenreRepository) DeleteGenre(ctx context.Context, id int) errs.ErrorStruct {
 
 	errStruct := errs.NewErrorStruct(
@@ -190,8 +194,8 @@ func (r *GenreRepository) DeleteGenre(ctx context.Context, id int) errs.ErrorStr
 	return errs.ErrorStruct{} 
 }
 
-// PATCH GENRE
-func (r *GenreRepository) PatchGenre(ctx context.Context, newGenre models.Genre, id int) errs.ErrorStruct {
+
+func (r *GenreRepository) PatchGenre(ctx context.Context, newGenre models.Genre, id int) (models.Genre, errs.ErrorStruct) {
 
 	errStruct := errs.NewErrorStruct(
 		errs.ServerError,
@@ -200,26 +204,45 @@ func (r *GenreRepository) PatchGenre(ctx context.Context, newGenre models.Genre,
 
 	res, err := r.db.ExecContext(
 		ctx,
-		`UPDATE genres SET genre_name = ? WHERE id = ?`,
+		`UPDATE genres SET name = ? WHERE id = ?`,
 		newGenre.Genre,
 		id,
 	)
+	
 	if err != nil {
 		log.Println(err)
-		return errStruct 
+		return models.Genre{}, errStruct 
+	}
+
+	var patchedGenre models.Genre
+
+	err = r.db.QueryRow(
+	`SELECT name
+	FROM genres 
+	WHERE id = ?`,
+	id,
+	).Scan(
+	&patchedGenre.Genre,
+	)
+
+	if err != nil {
+	return models.Genre{}, errStruct 
 	}
 
 	rows, err := res.RowsAffected()
 	if err != nil {
 		log.Println(err)
-		return errStruct 
+		return models.Genre{}, errStruct 
 	}
+
 	if rows == 0 {
 		errStruct = errs.NewErrorStruct(
 			errs.NotFound,
 			fmt.Errorf("genre not found with id: %v", id), 
 		)
-		return errStruct 
+		return models.Genre{}, errStruct
 	}
-	return errs.ErrorStruct{}
+
+
+	return patchedGenre, errs.ErrorStruct{}
 }

@@ -11,7 +11,6 @@ import (
 	"strconv"
 )
 
-// done
 func (h *Handler) GenresHandler(w http.ResponseWriter, r *http.Request) {
 
 	genre, errStruct := h.GenreService.GetGenres(r.Context())
@@ -25,12 +24,11 @@ func (h *Handler) GenresHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(genre)
 }
 
-// done
 func (h *Handler) GenreHandler(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)
-	if err != nil {
+	if err != nil || id < 1 {
 		log.Println(err)
 		errStruct := errs.NewErrorStruct(
 			errs.BadRequest,
@@ -52,7 +50,6 @@ func (h *Handler) GenreHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(genre)
 }
 
-// done
 func (h *Handler) CreateGenre(w http.ResponseWriter, r *http.Request) {
 
 	var req models.Genre
@@ -81,8 +78,6 @@ func (h *Handler) CreateGenre(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// CHANGE
-// not yet done
 func (h *Handler) PatchGenre(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
@@ -111,16 +106,16 @@ func (h *Handler) PatchGenre(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errStruct := h.GenreService.PatchGenre(r.Context(), newGenre, id)
+	patchedGenre, errStruct := h.GenreService.PatchGenre(r.Context(), newGenre, id)
 	if errStruct.ErrType != nil {
 		log.Println(errStruct.Error())
 		WriteErrorStatus(w, errStruct)
 		return
 	}
 	WriteStatus(w, r.Method)
+	json.NewEncoder(w).Encode(patchedGenre)
 }
 
-// CHANGE
 func (h *Handler) DeleteGenre(w http.ResponseWriter, r *http.Request) {
 
 	force := r.URL.Query().Get("force") == "true" 

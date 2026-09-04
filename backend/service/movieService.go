@@ -22,8 +22,6 @@ func NewMovieService(repo *repository.MovieRepository) *MovieService {
 	}
 }
 
-//done
-// GET ALL MOVIES
 func (s *MovieService) GetMovies(filters models.MovieFilters) ([]models.Movie, errs.ErrorStruct) {
 
 	if filters.ReleaseYear != nil {
@@ -44,7 +42,6 @@ func (s *MovieService) GetMovies(filters models.MovieFilters) ([]models.Movie, e
 	return movies, errs.ErrorStruct{} 
 }
 
-// GET MOVIE BY ID
 func (s *MovieService) GetMovieByID(id int) (models.Movie, errs.ErrorStruct) {
 
 	movie, errStruct := s.repo.GetMovieByID(id)
@@ -54,7 +51,6 @@ func (s *MovieService) GetMovieByID(id int) (models.Movie, errs.ErrorStruct) {
 	return movie, errs.ErrorStruct{} 
 }
 
-//POST movie
 func (s *MovieService) PostMovie(ctx context.Context, req models.Movie) (models.Movie, errs.ErrorStruct) {
 
 	if req.Title == "" || req.Description == "" || req.ReleaseDate == "" || req.Duration == "" {
@@ -83,37 +79,36 @@ func (s *MovieService) PostMovie(ctx context.Context, req models.Movie) (models.
 	return movie, errs.ErrorStruct{}
 }
 
-// PATCH MOVIE
-func (s *MovieService) PatchMovie(ctx context.Context, req models.PatchMovieReq, id int) errs.ErrorStruct {
+func (s *MovieService) PatchMovie(ctx context.Context, req models.PatchMovieReq, id int) (models.Movie, errs.ErrorStruct) {
 
 	if req.Title == nil && req.Description == nil && req.ReleaseDate == nil && req.Duration == nil {
 		errStruct := errs.NewErrorStruct(
 			errs.BadRequest,
 			errors.New("cannot update movie with no values"),
 		)
-		return errStruct 
+		return models.Movie{}, errStruct 
 	}
 
 	if req.ReleaseDate != nil {
-		releaseDate := *req.ReleaseDate
-		_, err := time.Parse(timeLayout, releaseDate)
+		_, err := time.Parse(timeLayout, *req.ReleaseDate)
 		if err != nil {
 		errStruct := errs.NewErrorStruct(
 			errs.BadRequest,
 			fmt.Errorf("invalid releasedate: %v", *req.ReleaseDate),
 		)
-			return errStruct 
+		return models.Movie{}, errStruct 
 		}
 	}
 
-	errStruct := s.repo.PatchMovie(ctx, req, id)
+	movie, errStruct := s.repo.PatchMovie(ctx, req, id)
 	if errStruct.ErrType != nil {
-		return errStruct 
+		return models.Movie{}, errStruct 
 	}
-	return errs.ErrorStruct{} 
+
+	return movie, errs.ErrorStruct{} 
 }
 
-// DELETE MOVIE
+
 func (s *MovieService) DeleteMovie(ctx context.Context, id int, force bool) errs.ErrorStruct {
 
 	if force {

@@ -21,7 +21,6 @@ func NewMovieRepository(db *sql.DB) *MovieRepository {
 	}
 }
 
-// POST A MOVIE
 func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (models.Movie, errs.ErrorStruct) {
 
 	errStruct := errs.NewErrorStruct(
@@ -40,8 +39,8 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 	res, err := tx.ExecContext(
 		ctx,
 		`INSERT INTO movies (title, description, release_date, duration)
-	VALUES (?, ?, ?, ?)
-	`,
+		 VALUES (?, ?, ?, ?)
+		`,
 		req.Title,
 		req.Description,
 		req.ReleaseDate,
@@ -100,7 +99,6 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 	return req, errs.ErrorStruct{} 
 }
 
-// GET ALL MOVIES
 func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie, errs.ErrorStruct) {
 
 	movies := []models.Movie{}
@@ -115,12 +113,48 @@ func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie
 	query := `SELECT m.id, m.title, m.description, m.release_date, m.duration FROM movies m`
 
 	if filters.GenreID != nil {
+
+		var exists bool
+
+		err := r.db.QueryRow(
+		`SELECT EXISTS(SELECT 1 FROM genres WHERE id = ?)`,
+		*filters.GenreID, 
+		).Scan(&exists) 
+
+		if err != nil {
+		return nil, errStruct 
+		}
+
+		if !exists {
+		errStruct.ErrType = errs.NotFound
+		errStruct.ErrMsg = errors.New("movie does not exist")
+		return nil, errStruct 
+		}
+
 		query += ` JOIN movie_genres gm ON gm.movie_id = m.id`
 		conditions = append(conditions, "gm.genre_id = ?")
 		args = append(args, *filters.GenreID)
 	}
 
 	if filters.ActorID != nil {
+
+		var exists bool
+
+		err := r.db.QueryRow(
+		`SELECT EXISTS(SELECT 1 FROM actors WHERE id = ?)`,
+		*filters.ActorID, 
+		).Scan(&exists) 
+
+		if err != nil {
+		return nil, errStruct 
+		}
+
+		if !exists {
+		errStruct.ErrType = errs.NotFound
+		errStruct.ErrMsg = errors.New("actor not found")
+		return nil, errStruct 
+		}
+
 		query += ` JOIN movie_actors am ON am.movie_id = m.id`
 		conditions = append(conditions, "am.actor_id = ?")
 		args = append(args, *filters.ActorID)
@@ -161,7 +195,6 @@ func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie
 	return movies, errs.ErrorStruct{} 
 }
 
-// GET MOVIE BY ID
 func (r *MovieRepository) GetMovieByID(id int) (models.Movie, errs.ErrorStruct) {
 
 	var movie models.Movie
@@ -193,15 +226,14 @@ func (r *MovieRepository) GetMovieByID(id int) (models.Movie, errs.ErrorStruct) 
 	return movie, errs.ErrorStruct{} 
 }
 
-// PATCH MOVIE
-func (r *MovieRepository) PatchMovie(ctx context.Context, movie models.PatchMovieReq, id int) errs.ErrorStruct {
+func (r *MovieRepository) PatchMovie(ctx context.Context, movie models.PatchMovieReq, id int) (models.Movie, errs.ErrorStruct) {
 
 	errStruct := errs.NewErrorStruct(
 		errs.ServerError,
 		errors.New("something went wrong updating movies"),
 	)
 
-
+	var patchedMovie models.Movie
 	res, err := r.db.ExecContext(
 		ctx,
 		`
@@ -213,30 +245,46 @@ func (r *MovieRepository) PatchMovie(ctx context.Context, movie models.PatchMovi
 		movie.Duration,
 		id,
 	)
+
+	err = r.db.QueryRow(
+	`
+	SELECT title, description, release_date, duration 
+	FROM movies 
+	WHERE id = ?`,
+	id,
+	).Scan(
+	&patchedMovie.Title, 
+	&patchedMovie.Description, 
+	&patchedMovie.ReleaseDate, 
+	&patchedMovie.Duration, 
+	)
+
 	if err != nil {
 		log.Println(err)
-		return errStruct 
+		return models.Movie{}, errStruct 
 	}
 
 	rows, err := res.RowsAffected()
 	if err != nil {
 		log.Println(err)
-		return errStruct 
+		return models.Movie{}, errStruct 
 	}
+
 	if rows == 0 {
 		log.Println(err)
 		errStruct.ErrType = errs.NotFound
 		errStruct.ErrMsg = fmt.Errorf("could not update movie with id: %v", id) 
-		return errStruct 
+		return models.Movie{}, errStruct 
 	}
-	return errs.ErrorStruct{} 
+	return patchedMovie, errs.ErrorStruct{} 
 }
+
 
 func (r *MovieRepository) DeleteForceMovie(ctx context.Context, id int) errs.ErrorStruct {
 
 	errStruct := errs.NewErrorStruct(
 		errs.ServerError,
-		errors.New("something went wrong deleting a movie"),
+		errors.New("something went wrong deleting movie"),
 	)
 
 	tx, err := r.db.BeginTx(ctx, nil)
@@ -282,9 +330,6 @@ func (r *MovieRepository) DeleteForceMovie(ctx context.Context, id int) errs.Err
 		return errStruct
 	}
 
-
-
-
 	return errs.ErrorStruct{} 
 }
 
@@ -320,7 +365,6 @@ func (r *MovieRepository) DeleteMovie(ctx context.Context, id int) errs.ErrorStr
 	return errs.ErrorStruct{} 
 }
 
-// GET ACTORS FROM A GIVEN MOVIE
 func (r *MovieRepository) MovieActors(ctx context.Context, id int) ([]models.Actor, errs.ErrorStruct) {
 
 	errStruct := errs.NewErrorStruct(

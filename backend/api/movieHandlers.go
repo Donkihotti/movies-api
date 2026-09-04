@@ -2,17 +2,16 @@ package api
 
 import (
 	"encoding/json"
-	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
-	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"log"
 	"net/http"
 	"strconv"
 	"fmt"
 	"errors"
+
+	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 )
 
-//done 
-// GET ALL MOVIES
 func (h *Handler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 
 	q := r.URL.Query()
@@ -44,8 +43,6 @@ func (h *Handler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(movies)
 }
 
-//done
-// GET MOVIE BY ID
 func (h *Handler) MovieHandler(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
@@ -72,8 +69,6 @@ func (h *Handler) MovieHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(movie)
 }
 
-//done 
-// POST MOVIE
 func (h *Handler) CreateMovie(w http.ResponseWriter, r *http.Request) {
 
 	var req models.Movie
@@ -101,8 +96,6 @@ func (h *Handler) CreateMovie(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(movie)
 }
 
-// CHANGE
-// PATCH MOVIE
 func (h *Handler) PatchMovie(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
@@ -122,7 +115,6 @@ func (h *Handler) PatchMovie(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&req); err != nil {
-		log.Println(err)
 		errStruct := errs.NewErrorStruct(
 			errs.BadRequest,
 			errors.New("something went wrong updating movie"),
@@ -131,15 +123,16 @@ func (h *Handler) PatchMovie(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if errStruct := h.MovieService.PatchMovie(r.Context(), req, id); errStruct.ErrType != nil {
+	movie, errStruct := h.MovieService.PatchMovie(r.Context(), req, id)
+	if errStruct.ErrType != nil {
 		WriteErrorStatus(w, errStruct)
 		return
 	}
+
 	WriteStatus(w, r.Method)
+	json.NewEncoder(w).Encode(movie)
 }
 
-// CHANGE
-// DELETE MOVIE
 func (h *Handler) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
@@ -163,8 +156,6 @@ func (h *Handler) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 	WriteStatus(w, r.Method)
 }
 
-// CHANGE
-// GET ALL ACTORS WITHIN A MOVIE
 func (h *Handler) MovieActors(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("movieId")
