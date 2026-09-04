@@ -154,7 +154,7 @@ func (r *GenreRepository) DeleteGenre(ctx context.Context, id int) error {
 }
 
 // PATCH GENRE
-func (r *GenreRepository) PatchGenre(ctx context.Context, newGenre models.Genre, id int) error {
+func (r *GenreRepository) PatchGenre(ctx context.Context, newGenre models.Genre, id int) (models.Genre, error) {
 
 	res, err := r.db.ExecContext(
 		ctx,
@@ -162,18 +162,32 @@ func (r *GenreRepository) PatchGenre(ctx context.Context, newGenre models.Genre,
 		newGenre.Genre,
 		id,
 	)
+	
 	if err != nil {
-		return errs.ServerError
+		return models.Genre{}, errs.ServerError
 	}
 
+	var patchedGenre models.Genre
+	err = r.db.QueryRow(
+	`SELECT genre_name
+	FROM genres 
+	WHERE id = ?`,
+	id,
+	).Scan(
+	&patchedGenre.Genre,
+	)
+
+	if err != nil {
+	return models.Genre{}, err
+	}
 	rows, err := res.RowsAffected()
 	if err != nil {
-		return errs.ServerError
+		return models.Genre{}, errs.ServerError
 	}
 	if rows == 0 {
-		return errs.NotFound
+		return models.Genre{}, errs.NotFound
 	}
 
-	return nil
+	return patchedGenre, nil
 
 }

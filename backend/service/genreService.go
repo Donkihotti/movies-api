@@ -71,16 +71,16 @@ func (s *GenreService) DeleteGenre(ctx context.Context, id int, force bool) erro
 	return nil
 }
 
-func (s *GenreService) PatchGenre(ctx context.Context, newGenre models.Genre, id int) error {
+func (s *GenreService) PatchGenre(ctx context.Context, newGenre models.Genre, id int) (models.Genre, error) {
 
 	if newGenre.Genre == "" {
-		return errs.BadRequest
+		return models.Genre{}, errs.BadRequest
 	}
 
-	err := s.repo.PatchGenre(ctx, newGenre, id)
+	patchedGenre, err := s.repo.PatchGenre(ctx, newGenre, id)
 	if err != nil {
-		return err
+		return models.Genre{}, err
 	}
-	return nil
+	return patchedGenre, nil
 
 }

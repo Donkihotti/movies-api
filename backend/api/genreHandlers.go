@@ -88,7 +88,7 @@ func (h *Handler) PatchGenre(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.GenreService.PatchGenre(r.Context(), newGenre, id)
+	patchedGenre, err := h.GenreService.PatchGenre(r.Context(), newGenre, id)
 	if err != nil {
 		log.Println(err)
 		WriteErrorStatus(w, err)
@@ -96,6 +96,7 @@ func (h *Handler) PatchGenre(w http.ResponseWriter, r *http.Request) {
 	}
 
 	WriteStatus(w, r.Method)
+	json.NewEncoder(w).Encode(patchedGenre)
 }
 
 func (h *Handler) DeleteGenre(w http.ResponseWriter, r *http.Request) {
