@@ -22,14 +22,16 @@ func (h *Handler) GenresHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(genre)
 }
 
+
 func (h *Handler) GenreHandler(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)
-	if err != nil {
-		log.Println(err)
-		WriteErrorStatus(w, errs.BadRequest)
-		return
+	log.Println(id)
+	if err != nil || id < 1 {
+	log.Println(err)
+	WriteErrorStatus(w, err)
+	return 
 	}
 
 	genre, err := h.GenreService.GetGenre(r.Context(), id)
@@ -43,6 +45,7 @@ func (h *Handler) GenreHandler(w http.ResponseWriter, r *http.Request) {
 	WriteStatus(w, r.Method)
 	json.NewEncoder(w).Encode(genre)
 }
+
 
 func (h *Handler) CreateGenre(w http.ResponseWriter, r *http.Request) {
 

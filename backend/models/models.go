@@ -21,11 +21,11 @@ type PatchMovieReq struct {
 
 type Genre struct {
 	ID    int    `json:"id"`
-	Genre string `json:"genre_name"`
+	Genre string `json:"name"`
 }
 
 type CreateGenreReq struct {
-	Genre string `json:"genre_name"`
+	Genre string `json:"name"`
 }
 
 type Actor struct {

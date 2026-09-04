@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+
 	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/repository"
@@ -27,11 +28,11 @@ func (s *GenreService) GetGenres(ctx context.Context) ([]models.Genre, error) {
 	return genres, nil
 }
 
-func (s *GenreService) GetGenre(ctx context.Context, id int) ([]models.Movie, error) {
+func (s *GenreService) GetGenre(ctx context.Context, id int) (models.Genre, error) {
 
 	genre, err := s.repo.GetGenre(ctx, id)
 	if err != nil {
-		return nil, err
+		return models.Genre{}, err
 	}
 
 	return genre, nil
