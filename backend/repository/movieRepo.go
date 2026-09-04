@@ -128,7 +128,7 @@ func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie
 
 	if filters.ReleaseYear != nil {
 		conditions = append(conditions, "m.release_date LIKE ?")
-		args = append(args, "%"+*filters.ReleaseYear+"%")
+		args = append(args, *filters.ReleaseYear+"%")
 	}
 
 	if len(conditions) > 0 {
