@@ -16,7 +16,7 @@ func main() {
 	args := os.Args
 	var populateDb bool
 
-	if args[1] == "-db" {
+	if len(args) > 1 && args[1] == "-db" {
 	populateDb = true	
 	}
 
