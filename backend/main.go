@@ -1,15 +1,24 @@
 package main
 
 import (
+	"log"
+	"net/http"
+	"os"
+
 	"gitea.kood.tech/timdanielfiander/movies-api.git/api"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/database"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/repository"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/service"
-	"log"
-	"net/http"
 )
 
 func main() {
+
+	args := os.Args
+	var populateDb bool
+
+	if args[1] == "-db" {
+	populateDb = true	
+	}
 
 	db, err := database.Connect()
 	if err != nil {
@@ -23,7 +32,7 @@ func main() {
 
 	defer db.Close()
 
-	err = database.RunMigrations(db)
+	err = database.RunMigrations(db, populateDb)
 	if err != nil {
 		log.Fatal(err)
 	}
