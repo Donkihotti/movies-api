@@ -20,7 +20,7 @@ func NewMovieRepository(db *sql.DB) *MovieRepository {
 	}
 }
 
-// POST A MOVIE
+
 func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (models.Movie, error) {
 
 	tx, err := r.db.BeginTx(ctx, nil)
@@ -88,7 +88,7 @@ func (r *MovieRepository) PostMovie(ctx context.Context, req models.Movie) (mode
 	return req, nil
 }
 
-// GET ALL MOVIES
+
 func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie, error) {
 
 	movies := []models.Movie{}
@@ -105,6 +105,7 @@ func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie
 		`SELECT EXISTS(SELECT 1 FROM genres WHERE id = ?)`,
 		*filters.GenreID, 
 		).Scan(&exists) 
+
 		if err != nil {
 		return nil, errs.ServerError
 		}
@@ -119,6 +120,22 @@ func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie
 	}
 
 	if filters.ActorID != nil {
+
+		var exists bool
+
+		err := r.db.QueryRow(
+		`SELECT EXISTS(SELECT 1 FROM actors WHERE id = ?)`,
+		*filters.ActorID, 
+		).Scan(&exists) 
+
+		if err != nil {
+		return nil, errs.ServerError
+		}
+
+		if !exists {
+		return nil, errs.NotFound
+		}
+
 		query += ` JOIN movie_actors am ON am.movie_id = m.id`
 		conditions = append(conditions, "am.actor_id = ?")
 		args = append(args, *filters.ActorID)
@@ -156,7 +173,7 @@ func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie
 	return movies, nil
 }
 
-// GET MOVIE BY ID
+
 func (r *MovieRepository) GetMovieByID(id int) (models.Movie, error) {
 
 	var movie models.Movie
@@ -181,7 +198,7 @@ func (r *MovieRepository) GetMovieByID(id int) (models.Movie, error) {
 	return movie, nil
 }
 
-// PATCH MOVIE
+
 func (r *MovieRepository) PatchMovie(ctx context.Context, movie models.PatchMovieReq, id int) error {
 
 	res, err := r.db.ExecContext(
@@ -208,6 +225,7 @@ func (r *MovieRepository) PatchMovie(ctx context.Context, movie models.PatchMovi
 	}
 	return nil
 }
+
 
 func (r *MovieRepository) DeleteForceMovie(ctx context.Context, id int) error {
 
@@ -245,6 +263,7 @@ func (r *MovieRepository) DeleteForceMovie(ctx context.Context, id int) error {
 	return tx.Commit()
 }
 
+
 func (r *MovieRepository) DeleteMovie(ctx context.Context, id int) error {
 
 	query := `DELETE FROM movies WHERE id = ?`
@@ -267,7 +286,7 @@ func (r *MovieRepository) DeleteMovie(ctx context.Context, id int) error {
 	return nil
 }
 
-// GET ACTORS FROM A GIVEN MOVIE
+
 func (r *MovieRepository) MovieActors(ctx context.Context, id int) ([]models.Actor, error) {
 
 	query := `SELECT a.id, a.name, a.birth_date FROM actors a JOIN movie_actors ma ON ma.actor_id = a.id WHERE ma.movie_id = ?`
