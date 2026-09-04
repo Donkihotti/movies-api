@@ -98,6 +98,21 @@ func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie
 	query := `SELECT m.id, m.title, m.description, m.release_date, m.duration FROM movies m`
 
 	if filters.GenreID != nil {
+
+		var exists bool
+
+		err := r.db.QueryRow(
+		`SELECT EXISTS(SELECT 1 FROM genres WHERE id = ?)`,
+		*filters.GenreID, 
+		).Scan(&exists) 
+		if err != nil {
+		return nil, errs.ServerError
+		}
+
+		if !exists {
+		return nil, errs.NotFound
+		}
+
 		query += ` JOIN movie_genres gm ON gm.movie_id = m.id`
 		conditions = append(conditions, "gm.genre_id = ?")
 		args = append(args, *filters.GenreID)
@@ -113,11 +128,6 @@ func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie
 		conditions = append(conditions, "m.release_date LIKE ?")
 		args = append(args, "%"+*filters.ReleaseYear+"%")
 	}
-
-	//	if filters.Duration != nil {
-	//		conditions = append(conditions, "m.duration = ?")
-	//		args = append(args, "%" + *filters.Duration + "%")
-	//	}
 
 	if len(conditions) > 0 {
 		query += " WHERE " + strings.Join(conditions, " AND ")
