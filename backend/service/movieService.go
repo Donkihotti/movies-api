@@ -68,25 +68,25 @@ func (s *MovieService) PostMovie(ctx context.Context, req models.Movie) (models.
 }
 
 // PATCH MOVIE
-func (s *MovieService) PatchMovie(ctx context.Context, req models.PatchMovieReq, id int) error {
+func (s *MovieService) PatchMovie(ctx context.Context, req models.PatchMovieReq, id int) (models.Movie, error) {
 
 	if req.Title == nil && req.Description == nil && req.ReleaseDate == nil && req.Duration == nil {
-		return errs.BadRequest
+		return models.Movie{}, errs.BadRequest
 	}
 
 	if req.ReleaseDate != nil {
 		releaseDate := *req.ReleaseDate
 		_, err := time.Parse(timeLayout, releaseDate)
 		if err != nil {
-			return errs.BadRequest
+			return models.Movie{}, errs.BadRequest
 		}
 	}
 
-	err := s.repo.PatchMovie(ctx, req, id)
+	movie, err := s.repo.PatchMovie(ctx, req, id)
 	if err != nil {
-		return err
+		return models.Movie{}, err
 	}
-	return nil
+	return movie, nil
 }
 
 // DELETE MOVIE

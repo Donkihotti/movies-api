@@ -109,12 +109,14 @@ func (h *Handler) PatchMovie(w http.ResponseWriter, r *http.Request) {
 	decoder.DisallowUnknownFields()
 	decoder.Decode(&req)
 
-	if err := h.MovieService.PatchMovie(r.Context(), req, id); err != nil {
+	movie, err := h.MovieService.PatchMovie(r.Context(), req, id); 
+	if err != nil {
 		log.Println(err)
 		WriteErrorStatus(w, err)
 		return
 	}
 	WriteStatus(w, r.Method)
+	json.NewEncoder(w).Encode(movie)
 }
 
 // DELETE MOVIE

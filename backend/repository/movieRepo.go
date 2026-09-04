@@ -199,8 +199,9 @@ func (r *MovieRepository) GetMovieByID(id int) (models.Movie, error) {
 }
 
 
-func (r *MovieRepository) PatchMovie(ctx context.Context, movie models.PatchMovieReq, id int) error {
+func (r *MovieRepository) PatchMovie(ctx context.Context, movie models.PatchMovieReq, id int) (models.Movie, error) {
 
+	var patchedMovie models.Movie
 	res, err := r.db.ExecContext(
 		ctx,
 		`
@@ -212,18 +213,34 @@ func (r *MovieRepository) PatchMovie(ctx context.Context, movie models.PatchMovi
 		movie.Duration,
 		id,
 	)
+
+	err = r.db.QueryRow(
+	`
+	SELECT title, description, release_date, duration 
+	FROM movies 
+	WHERE id = ?`,
+	id,
+	).Scan(
+	&patchedMovie.Title, 
+	&patchedMovie.Description, 
+	&patchedMovie.ReleaseDate, 
+	&patchedMovie.Duration, 
+	)
+
 	if err != nil {
-		return errs.ServerError
+		return models.Movie{}, errs.ServerError
 	}
 
 	rows, err := res.RowsAffected()
 	if err != nil {
-		return errs.ServerError
+		return models.Movie{}, errs.ServerError
 	}
+
 	if rows == 0 {
-		return errs.NotFound
+		return models.Movie{}, errs.NotFound
 	}
-	return nil
+
+	return patchedMovie, nil
 }
 
 
