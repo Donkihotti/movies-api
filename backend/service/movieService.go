@@ -42,11 +42,11 @@ func (s *MovieService) GetMovies(filters models.MovieFilters) ([]models.Movie, e
 	return movies, errs.ErrorStruct{} 
 }
 
-func (s *MovieService) GetMovieByID(id int) (models.Movie, errs.ErrorStruct) {
+func (s *MovieService) GetMovieByID(id int) (models.MovieReq, errs.ErrorStruct) {
 
 	movie, errStruct := s.repo.GetMovieByID(id)
 	if errStruct.ErrType != nil {
-		return models.Movie{}, errStruct
+		return models.MovieReq{}, errStruct
 	}
 	return movie, errs.ErrorStruct{} 
 }

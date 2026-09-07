@@ -195,9 +195,9 @@ func (r *MovieRepository) GetMovies(filters models.MovieFilters) ([]models.Movie
 	return movies, errs.ErrorStruct{} 
 }
 
-func (r *MovieRepository) GetMovieByID(id int) (models.Movie, errs.ErrorStruct) {
+func (r *MovieRepository) GetMovieByID(id int) (models.MovieReq, errs.ErrorStruct) {
 
-	var movie models.Movie
+	var movie models.MovieReq
 
 	row := r.db.QueryRow(
 		`SELECT id, title, description, release_date, duration
@@ -216,11 +216,65 @@ func (r *MovieRepository) GetMovieByID(id int) (models.Movie, errs.ErrorStruct) 
 		if errors.Is(err, sql.ErrNoRows) {
 			errStruct.ErrType = errs.NotFound
 			errStruct.ErrMsg = fmt.Errorf("could not get movie with id: %v", id)
-			return models.Movie{}, errStruct 
+			return models.MovieReq{}, errStruct 
 		}
 		errStruct.ErrType = errs.ServerError
 		errStruct.ErrMsg = errors.New("something went wrong getting movie") 
-		return models.Movie{}, errStruct 
+		return models.MovieReq{}, errStruct 
+	}
+
+	rows, err := r.db.Query(
+	`SELECT g.id, g.name
+	FROM genres g 
+	JOIN movie_genres mg ON mg.genre_id = g.id
+	WHERE mg.movie_id = ? 
+	`,
+	id,
+	) 
+	if err != nil {
+	errStruct := errs.ErrorStruct{}
+	return models.MovieReq{}, errStruct
+	}
+
+	for rows.Next() {
+	var genre models.Genre	
+	err := rows.Scan(
+	&genre.ID,
+	&genre.Genre,
+	)
+
+	if err != nil {
+		errStruct := errs.ErrorStruct{}
+		return models.MovieReq{}, errStruct 
+	}
+	movie.Genres = append(movie.Genres, genre)
+	}
+
+	rows, err = r.db.Query(
+	`SELECT a.id, a.name, a.birth_date
+	FROM actors a 	
+	JOIN movie_actors ag ON ag.actor_id = a.id
+	WHERE ag.movie_id = ? 
+	`,
+	id,
+	)
+	if err != nil {
+		errStruct := errs.ErrorStruct{}
+		return models.MovieReq{}, errStruct 
+	}
+
+	for rows.Next() {
+	var actor models.Actor
+	err = rows.Scan(
+	&actor.ID,
+	&actor.Name,
+	&actor.BirthDate,
+	)
+	if err != nil {
+		errStruct := errs.ErrorStruct{}
+		return models.MovieReq{}, errStruct 
+	}
+	movie.Actors = append(movie.Actors, actor)
 	}
 
 	return movie, errs.ErrorStruct{} 
