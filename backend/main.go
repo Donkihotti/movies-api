@@ -9,6 +9,7 @@ import (
 	"gitea.kood.tech/timdanielfiander/movies-api.git/database"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/repository"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/service"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/api/handlers"
 )
 
 func main() {
@@ -45,13 +46,13 @@ func main() {
 	genreService := service.NewGenreService(genreRepo)
 	actorService := service.NewActorService(actorRepo)
 
-	movieHandler := &api.MovieHandler{
+	movieHandler := &handlers.MovieHandler{
 		Service: movieService,
 	}
-	genreHandler := &api.GenreHandler{
+	genreHandler := &handlers.GenreHandler{
 		Service: genreService,
 	}
-	actorHandler := &api.ActorHandler{
+	actorHandler := &handlers.ActorHandler{
 		Service: actorService,
 	}
 

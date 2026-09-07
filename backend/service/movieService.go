@@ -25,13 +25,17 @@ func NewMovieService(repo *repository.MovieRepository) *MovieService {
 func (s *MovieService) GetMovies(filters models.MovieFilters) ([]models.MovieReq, errs.ErrorStruct) {
 
 	if filters.ReleaseYear != nil {
-		if _, err := strconv.Atoi(*filters.ReleaseYear); err != nil {
-			log.Println(err)
-			errStruct := errs.NewErrorStruct(
-				errs.BadRequest,
-				fmt.Errorf("invalid releaseyear: %v", *filters.ReleaseYear),
+		errStruct := errs.NewErrorStruct(
+			errs.BadRequest,
+			fmt.Errorf("invalid releaseyear: %v", *filters.ReleaseYear),
 			)
-			return []models.MovieReq{}, errStruct 
+		num, err := strconv.Atoi(*filters.ReleaseYear)
+		if err != nil {
+		log.Println(err)
+		return []models.MovieReq{}, errStruct 
+		}
+		if num < 1888 {
+		return []models.MovieReq{}, errStruct
 		}
 	}
 

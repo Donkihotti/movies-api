@@ -1,4 +1,4 @@
-package api
+package handlers
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"fmt"
 	"errors"
+	"strings"
 
 	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
@@ -18,6 +19,15 @@ type MovieHandler struct {
 }
 
 func (h *MovieHandler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
+
+	if strings.HasSuffix(r.RequestURI, "?") {
+    errStruct := errs.NewErrorStruct(
+        errs.BadRequest,
+        errors.New("empty query string"),
+    )
+    WriteErrorStatus(w, errStruct)
+    return
+	}
 
 	q := r.URL.Query()
 
@@ -97,6 +107,7 @@ func (h *MovieHandler) CreateMovie(w http.ResponseWriter, r *http.Request) {
 		WriteErrorStatus(w, errStruct) 
 		return
 	}
+
 
 	movie, errStruct := h.Service.PostMovie(r.Context(), req)
 	if errStruct.ErrType != nil {

@@ -2,9 +2,13 @@ package api
 
 import (
 	"net/http"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/api/handlers"
 )
 
-func NewRouter(movieHandler *MovieHandler, genreHandler *GenreHandler, actorHandler *ActorHandler) *http.ServeMux {
+func NewRouter(
+	movieHandler *handlers.MovieHandler,
+	genreHandler *handlers.GenreHandler,
+	actorHandler *handlers.ActorHandler) *http.ServeMux {
 
 	mux := http.NewServeMux()
 
