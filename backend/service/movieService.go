@@ -22,7 +22,7 @@ func NewMovieService(repo *repository.MovieRepository) *MovieService {
 	}
 }
 
-func (s *MovieService) GetMovies(filters models.MovieFilters) ([]models.Movie, errs.ErrorStruct) {
+func (s *MovieService) GetMovies(filters models.MovieFilters) ([]models.MovieReq, errs.ErrorStruct) {
 
 	if filters.ReleaseYear != nil {
 		if _, err := strconv.Atoi(*filters.ReleaseYear); err != nil {
@@ -31,7 +31,7 @@ func (s *MovieService) GetMovies(filters models.MovieFilters) ([]models.Movie, e
 				errs.BadRequest,
 				fmt.Errorf("invalid releaseyear: %v", *filters.ReleaseYear),
 			)
-			return []models.Movie{}, errStruct 
+			return []models.MovieReq{}, errStruct 
 		}
 	}
 
@@ -109,15 +109,7 @@ func (s *MovieService) PatchMovie(ctx context.Context, req models.PatchMovieReq,
 }
 
 
-func (s *MovieService) DeleteMovie(ctx context.Context, id int, force bool) errs.ErrorStruct {
-
-	if force {
-	errStruct := s.repo.DeleteForceMovie(ctx, id) 
-	if errStruct.ErrType != nil {
-	return errStruct 
-	}
-	return errs.ErrorStruct{} 
-	} 
+func (s *MovieService) DeleteMovie(ctx context.Context, id int) errs.ErrorStruct {
 
 	if errStruct := s.repo.DeleteMovie(ctx, id); errStruct.ErrType != nil {
 		return errStruct 

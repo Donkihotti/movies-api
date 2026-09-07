@@ -16,16 +16,24 @@ func (h *Handler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 
 	q := r.URL.Query()
 
-	actorid := q.Get("actor")
-	genreid := q.Get("genre")
-	releaseYear := q.Get("releaseYear")
-
 	filters := models.MovieFilters{}
+	actorid := q.Get("actor")
+	releaseYear := q.Get("releaseYear")
+	if genreValues, exists := q["genre"]; exists {
+		if len(genreValues) == 0 || genreValues[0] == "" {
+		errStruct := errs.ErrorStruct{
+		errs.BadRequest, 
+		errors.New("No ID present in request"), 
+		}
+		log.Println(errStruct.Error())
+		WriteErrorStatus(w, errStruct)	
+		return
+		}
+	filters.GenreID = &genreValues[0]
+	}
+
 	if actorid != "" {
 		filters.ActorID = &actorid
-	}
-	if genreid != "" {
-		filters.GenreID = &genreid
 	}
 	if releaseYear != "" {
 		filters.ReleaseYear = &releaseYear
@@ -146,9 +154,8 @@ func (h *Handler) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	force := r.URL.Query().Get("force") == "true"
 
-	if errStruct := h.MovieService.DeleteMovie(r.Context(), id, force); errStruct.ErrType != nil {
+	if errStruct := h.MovieService.DeleteMovie(r.Context(), id); errStruct.ErrType != nil {
 		WriteErrorStatus(w, errStruct)
 		return
 	}
