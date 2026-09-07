@@ -31,8 +31,23 @@ func (h *MovieHandler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 
 	q := r.URL.Query()
 
+	for key := range q {
+	switch key {
+	case "genre", "actor", "releaseYear":
+	default: 
+    errStruct := errs.NewErrorStruct(
+        errs.BadRequest,
+        errors.New("bad query"),
+	    )
+		WriteErrorStatus(w, errStruct)
+		return 
+	}
+
+	}
+
 	filters := models.MovieFilters{}
 	actorid := q.Get("actor")
+
 	releaseYear := q.Get("releaseYear")
 	if genreValues, exists := q["genre"]; exists {
 		if len(genreValues) == 0 || genreValues[0] == "" {
@@ -46,6 +61,7 @@ func (h *MovieHandler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	filters.GenreID = &genreValues[0]
 	}
+
 
 	if actorid != "" {
 		filters.ActorID = &actorid
