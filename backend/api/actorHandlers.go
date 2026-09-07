@@ -10,13 +10,18 @@ import (
 
 	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/service"
 )
 
-func (h *Handler) GetActorsHandler(w http.ResponseWriter, r *http.Request) {
+type ActorHandler struct {
+	Service *service.ActorService
+}
+
+func (h *ActorHandler) GetActorsHandler(w http.ResponseWriter, r *http.Request) {
 
 	name := r.URL.Query().Get("name")
 
-	actors, errStruct := h.ActorService.GetActors(name)
+	actors, errStruct := h.Service.GetActors(name)
 	if errStruct.ErrType != nil {
 		log.Println(errStruct.Error())
 		WriteErrorStatus(w, errStruct)
@@ -28,7 +33,7 @@ func (h *Handler) GetActorsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(actors)
 }
 
-func (h *Handler) GetActorHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ActorHandler) GetActorHandler(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)
@@ -41,7 +46,7 @@ func (h *Handler) GetActorHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	actor, errStruct := h.ActorService.GetActorByID(id)
+	actor, errStruct := h.Service.GetActorByID(id)
 	if errStruct.ErrType != nil {
 		log.Println(errStruct.Error())
 		WriteErrorStatus(w, errStruct)
@@ -53,12 +58,12 @@ func (h *Handler) GetActorHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(actor)
 }
 
-func (h *Handler) GetActorsByNameHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ActorHandler) GetActorsByNameHandler(w http.ResponseWriter, r *http.Request) {
 
 	name := r.PathValue("name")
 	ctx := r.Context()
 
-	actors, errStruct := h.ActorService.GetActorsByName(ctx, name)
+	actors, errStruct := h.Service.GetActorsByName(ctx, name)
 	if errStruct.ErrType != nil {
 		log.Println(errStruct.Error())
 		WriteErrorStatus(w, errStruct)
@@ -70,12 +75,12 @@ func (h *Handler) GetActorsByNameHandler(w http.ResponseWriter, r *http.Request)
 	json.NewEncoder(w).Encode(actors)
 }
 
-func (h *Handler) GetActorsByBirthdateHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ActorHandler) GetActorsByBirthdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	date := r.PathValue("birthdate")
 	ctx := r.Context()
 
-	actors, errStruct := h.ActorService.GetActorsByBirthdate(ctx, date)
+	actors, errStruct := h.Service.GetActorsByBirthdate(ctx, date)
 	if errStruct.ErrType != nil {
 		log.Println(errStruct.Error())
 		WriteErrorStatus(w, errStruct)
@@ -86,7 +91,7 @@ func (h *Handler) GetActorsByBirthdateHandler(w http.ResponseWriter, r *http.Req
 	json.NewEncoder(w).Encode(actors)
 }
 
-func (h *Handler) PostActor(w http.ResponseWriter, r *http.Request) {
+func (h *ActorHandler) PostActor(w http.ResponseWriter, r *http.Request) {
 
 	var req models.Actor
 	decoder := json.NewDecoder(r.Body)
@@ -102,7 +107,7 @@ func (h *Handler) PostActor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	actor, errStruct := h.ActorService.PostActor(r.Context(), req)
+	actor, errStruct := h.Service.PostActor(r.Context(), req)
 	if errStruct.ErrType != nil {
 		log.Println(errStruct.Error())
 		WriteErrorStatus(w, errStruct)
@@ -113,7 +118,7 @@ func (h *Handler) PostActor(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(actor)
 }
 
-func (h *Handler) DeleteActorHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ActorHandler) DeleteActorHandler(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)
@@ -128,7 +133,7 @@ func (h *Handler) DeleteActorHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	force := r.URL.Query().Get("force") == "true"
 
-	errStruct := h.ActorService.DeleteActor(r.Context(), id, force)
+	errStruct := h.Service.DeleteActor(r.Context(), id, force)
 	if errStruct.ErrType != nil {
 		log.Println(errStruct.Error())
 		WriteErrorStatus(w, errStruct)
@@ -137,7 +142,7 @@ func (h *Handler) DeleteActorHandler(w http.ResponseWriter, r *http.Request) {
 	WriteStatus(w, r.Method)
 }
 
-func (h *Handler) PatchActorHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ActorHandler) PatchActorHandler(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)
@@ -166,7 +171,7 @@ func (h *Handler) PatchActorHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	patchedActor, errStruct := h.ActorService.PatchActor(r.Context(), req, id)
+	patchedActor, errStruct := h.Service.PatchActor(r.Context(), req, id)
 	if errStruct.ErrType != nil {
 		log.Println(errStruct.Error())
 		WriteErrorStatus(w, errStruct)

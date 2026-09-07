@@ -3,23 +3,8 @@ package api
 import (
 	"encoding/json"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
-	"gitea.kood.tech/timdanielfiander/movies-api.git/service"
 	"net/http"
 )
-
-type Handler struct {
-	MovieService *service.MovieService
-	GenreService *service.GenreService
-	ActorService *service.ActorService
-}
-
-func NewHandler(MovieService *service.MovieService, GenreService *service.GenreService, ActorService *service.ActorService) *Handler {
-	return &Handler{
-		MovieService: MovieService,
-		ActorService: ActorService,
-		GenreService: GenreService,
-	}
-}
 
 func WriteErrorStatus(w http.ResponseWriter, es errs.ErrorStruct) {
 

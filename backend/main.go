@@ -45,9 +45,21 @@ func main() {
 	genreService := service.NewGenreService(genreRepo)
 	actorService := service.NewActorService(actorRepo)
 
-	handler := api.NewHandler(movieService, genreService, actorService)
+	movieHandler := &api.MovieHandler{
+		Service: movieService,
+	}
+	genreHandler := &api.GenreHandler{
+		Service: genreService,
+	}
+	actorHandler := &api.ActorHandler{
+		Service: actorService,
+	}
 
-	router := api.NewRouter(handler)
+	router := api.NewRouter(
+	movieHandler, 
+	genreHandler, 
+	actorHandler,
+	)
 
 	log.Println("Server running at port :8080")
 	err = http.ListenAndServe(":8080", router)

@@ -10,9 +10,14 @@ import (
 
 	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/service"
 )
 
-func (h *Handler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
+type MovieHandler struct {
+	Service *service.MovieService
+}
+
+func (h *MovieHandler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 
 	q := r.URL.Query()
 
@@ -39,7 +44,7 @@ func (h *Handler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 		filters.ReleaseYear = &releaseYear
 	}
 
-	movies, errStruct := h.MovieService.GetMovies(filters)
+	movies, errStruct := h.Service.GetMovies(filters)
 	if errStruct.ErrType != nil {
 		log.Println(errStruct.Error())
 		WriteErrorStatus(w, errStruct)
@@ -51,7 +56,7 @@ func (h *Handler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(movies)
 }
 
-func (h *Handler) MovieHandler(w http.ResponseWriter, r *http.Request) {
+func (h *MovieHandler) MovieHandler(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)
@@ -65,7 +70,7 @@ func (h *Handler) MovieHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	movie, errStruct := h.MovieService.GetMovieByID(id)
+	movie, errStruct := h.Service.GetMovieByID(id)
 	if errStruct.ErrType != nil {
 		log.Println(errStruct.Error())
 		WriteErrorStatus(w, errStruct)
@@ -77,7 +82,7 @@ func (h *Handler) MovieHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(movie)
 }
 
-func (h *Handler) CreateMovie(w http.ResponseWriter, r *http.Request) {
+func (h *MovieHandler) CreateMovie(w http.ResponseWriter, r *http.Request) {
 
 	var req models.Movie
 	decoder := json.NewDecoder(r.Body)
@@ -93,7 +98,7 @@ func (h *Handler) CreateMovie(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	movie, errStruct := h.MovieService.PostMovie(r.Context(), req)
+	movie, errStruct := h.Service.PostMovie(r.Context(), req)
 	if errStruct.ErrType != nil {
 		log.Println(errStruct.Error())
 		WriteErrorStatus(w, errStruct)
@@ -104,7 +109,7 @@ func (h *Handler) CreateMovie(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(movie)
 }
 
-func (h *Handler) PatchMovie(w http.ResponseWriter, r *http.Request) {
+func (h *MovieHandler) PatchMovie(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)
@@ -131,7 +136,7 @@ func (h *Handler) PatchMovie(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	movie, errStruct := h.MovieService.PatchMovie(r.Context(), req, id)
+	movie, errStruct := h.Service.PatchMovie(r.Context(), req, id)
 	if errStruct.ErrType != nil {
 		WriteErrorStatus(w, errStruct)
 		return
@@ -141,7 +146,7 @@ func (h *Handler) PatchMovie(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(movie)
 }
 
-func (h *Handler) DeleteMovie(w http.ResponseWriter, r *http.Request) {
+func (h *MovieHandler) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)
@@ -155,7 +160,7 @@ func (h *Handler) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 	}
 
 
-	if errStruct := h.MovieService.DeleteMovie(r.Context(), id); errStruct.ErrType != nil {
+	if errStruct := h.Service.DeleteMovie(r.Context(), id); errStruct.ErrType != nil {
 		WriteErrorStatus(w, errStruct)
 		return
 	}
@@ -163,7 +168,7 @@ func (h *Handler) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 	WriteStatus(w, r.Method)
 }
 
-func (h *Handler) MovieActors(w http.ResponseWriter, r *http.Request) {
+func (h *MovieHandler) MovieActors(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("movieId")
 	id, err := strconv.Atoi(idString)
@@ -176,7 +181,7 @@ func (h *Handler) MovieActors(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	actors, errStruct := h.MovieService.MovieActors(r.Context(), id)
+	actors, errStruct := h.Service.MovieActors(r.Context(), id)
 	if errStruct.ErrType != nil {
 		WriteErrorStatus(w, errStruct)
 		return

@@ -4,30 +4,30 @@ import (
 	"net/http"
 )
 
-func NewRouter(h *Handler) *http.ServeMux {
+func NewRouter(movieHandler *MovieHandler, genreHandler *GenreHandler, actorHandler *ActorHandler) *http.ServeMux {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("POST /api/movies", h.CreateMovie)
-	mux.HandleFunc("GET /api/movies", h.MoviesHandler)
-	mux.HandleFunc("GET /api/movies/{id}", h.MovieHandler)
-	mux.HandleFunc("PATCH /api/movies/{id}", h.PatchMovie)
-	mux.HandleFunc("DELETE /api/movies/{id}", h.DeleteMovie)
-	mux.HandleFunc("GET /api/movies/{movieId}/actors", h.MovieActors)
+	mux.HandleFunc("POST /api/movies", movieHandler.CreateMovie)
+	mux.HandleFunc("GET /api/movies", movieHandler.MoviesHandler)
+	mux.HandleFunc("GET /api/movies/{id}", movieHandler.MovieHandler)
+	mux.HandleFunc("PATCH /api/movies/{id}", movieHandler.PatchMovie)
+	mux.HandleFunc("DELETE /api/movies/{id}", movieHandler.DeleteMovie)
+	mux.HandleFunc("GET /api/movies/{movieId}/actors", movieHandler.MovieActors)
 
-	mux.HandleFunc("GET /api/genres", h.GenresHandler)
-	mux.HandleFunc("GET /api/genres/{id}", h.GenreHandler)
-	mux.HandleFunc("POST /api/genres", h.CreateGenre)
-	mux.HandleFunc("DELETE /api/genres/{id}", h.DeleteGenre)
-	mux.HandleFunc("PATCH /api/genres/{id}", h.PatchGenre)
+	mux.HandleFunc("GET /api/genres", genreHandler.GenresHandler)
+	mux.HandleFunc("GET /api/genres/{id}", genreHandler.GenreHandler)
+	mux.HandleFunc("POST /api/genres", genreHandler.CreateGenre)
+	mux.HandleFunc("DELETE /api/genres/{id}", genreHandler.DeleteGenre)
+	mux.HandleFunc("PATCH /api/genres/{id}", genreHandler.PatchGenre)
 
-	mux.HandleFunc("POST /api/actors", h.PostActor)
-	mux.HandleFunc("GET /api/actors", h.GetActorsHandler)
-	mux.HandleFunc("GET /api/actors/name/{name}", h.GetActorsByNameHandler)
-	mux.HandleFunc("GET /api/actors/birthdate/{birthdate}", h.GetActorsByBirthdateHandler)
-	mux.HandleFunc("GET /api/actors/{id}", h.GetActorHandler)
-	mux.HandleFunc("DELETE /api/actors/{id}", h.DeleteActorHandler)
-	mux.HandleFunc("PATCH /api/actors/{id}", h.PatchActorHandler)
+	mux.HandleFunc("POST /api/actors", actorHandler.PostActor)
+	mux.HandleFunc("GET /api/actors", actorHandler.GetActorsHandler)
+	mux.HandleFunc("GET /api/actors/name/{name}", actorHandler.GetActorsByNameHandler)
+	mux.HandleFunc("GET /api/actors/birtactorHandlerdate/{birthdate}", actorHandler.GetActorsByBirthdateHandler)
+	mux.HandleFunc("GET /api/actors/{id}", actorHandler.GetActorHandler)
+	mux.HandleFunc("DELETE /api/actors/{id}", actorHandler.DeleteActorHandler)
+	mux.HandleFunc("PATCH /api/actors/{id}", actorHandler.PatchActorHandler)
 
 	return mux
 }
