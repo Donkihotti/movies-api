@@ -166,11 +166,12 @@ func (h *Handler) PatchActorHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errStruct := h.ActorService.PatchActor(r.Context(), req, id)
+	patchedActor, errStruct := h.ActorService.PatchActor(r.Context(), req, id)
 	if errStruct.ErrType != nil {
 		log.Println(errStruct.Error())
 		WriteErrorStatus(w, errStruct)
 		return
 	}
 	WriteStatus(w, r.Method)
+	json.NewEncoder(w).Encode(patchedActor)
 }

@@ -112,7 +112,7 @@ func (as *ActorService) DeleteActor(ctx context.Context, id int, force bool) err
 	return errs.ErrorStruct{}
 }
 
-func (as *ActorService) PatchActor(ctx context.Context, req models.PatchActorReq, id int) errs.ErrorStruct {
+func (as *ActorService) PatchActor(ctx context.Context, req models.PatchActorReq, id int) (models.Actor, errs.ErrorStruct) {
 
 	if req.Name == nil && req.BirthDate == nil {
 		errStruct := errs.NewErrorStruct(
@@ -120,7 +120,7 @@ func (as *ActorService) PatchActor(ctx context.Context, req models.PatchActorReq
 			errors.New("no new values set updating actor"),
 		)
 		log.Println(errStruct.Error())
-		return errStruct
+		return models.Actor{}, errStruct
 	}
 
 	if req.BirthDate != nil {
@@ -130,13 +130,13 @@ func (as *ActorService) PatchActor(ctx context.Context, req models.PatchActorReq
 				errs.BadRequest,
 				fmt.Errorf("invalid birthdate: %v", *req.BirthDate),
 			)
-			return errStruct
+			return models.Actor{}, errStruct
 		}
 	}
 
-	errStruct := as.repo.PatchActor(ctx, req, id)
+	patchedMovie, errStruct := as.repo.PatchActor(ctx, req, id)
 	if errStruct.ErrType != nil {
-		return errStruct
+		return models.Actor{}, errStruct
 	}
-	return errs.ErrorStruct{}
+	return patchedMovie, errs.ErrorStruct{}
 }

@@ -220,7 +220,7 @@ func (r *ActorRepository) DeleteActor(ctx context.Context, id int) errs.ErrorStr
 	return errs.ErrorStruct{}
 }
 
-func (r *ActorRepository) PatchActor(ctx context.Context, req models.PatchActorReq, id int) errs.ErrorStruct {
+func (r *ActorRepository) PatchActor(ctx context.Context, req models.PatchActorReq, id int) (models.Actor, errs.ErrorStruct) {
 
 	errStruct := errs.NewErrorStruct(
 		errs.ServerError,
@@ -232,13 +232,14 @@ func (r *ActorRepository) PatchActor(ctx context.Context, req models.PatchActorR
 	row, err := r.db.ExecContext(ctx, query, req.Name, req.BirthDate, id)
 	if err != nil {
 		log.Println(err)
-		return errStruct
+		return models.Actor{}, errStruct
 	}
+
 
 	rows, err := row.RowsAffected()
 	if err != nil {
 		log.Println(err)
-		return errStruct
+		return models.Actor{}, errStruct
 	}
 
 	if rows == 0 {
@@ -246,10 +247,28 @@ func (r *ActorRepository) PatchActor(ctx context.Context, req models.PatchActorR
 			errs.NotFound,
 			fmt.Errorf("actor with id: %v not found", id),
 		)
-		return errStruct
+		return models.Actor{}, errStruct
 	}
 
-	return errs.ErrorStruct{}
+	var patchedActor models.Actor
+
+	err = r.db.QueryRow(
+	`
+	SELECT id, name, birth_date
+	FROM actors 
+	WHERE id = ?
+	`, id).Scan(
+	&patchedActor.ID,
+	&patchedActor.Name,
+	&patchedActor.BirthDate,
+	)
+
+	if err != nil {
+		log.Println(err)
+		return models.Actor{}, errStruct
+	}
+
+	return patchedActor, errs.ErrorStruct{}
 }
 
 func (r *ActorRepository) GetActorsByName(ctx context.Context, Name string) ([]models.Actor, errs.ErrorStruct) {
