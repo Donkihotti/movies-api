@@ -168,6 +168,27 @@ func (r *GenreRepository) DeleteGenre(ctx context.Context, id int) errs.ErrorStr
 		errors.New("something went wrong deleting a genre"),
 	)
 
+	var exists bool
+	err := r.db.QueryRowContext(
+	ctx, 
+	`
+	SELECT EXISTS(
+	SELECT 1 
+	FROM movie_genres
+	WHERE genre_id = ?
+	)`, id).Scan(&exists)
+	if err != nil {
+	return errStruct
+	}
+	
+	if exists {	
+	errStruct := errs.NewErrorStruct(
+		errs.BadRequest,
+		errors.New("Cannot delete from genres since relationship exists"),
+	)
+	return errStruct
+	}	
+
 	res, err := r.db.ExecContext(
 		ctx,
 		`DELETE FROM genres WHERE id = ?`,

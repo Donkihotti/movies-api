@@ -192,6 +192,27 @@ func (r *ActorRepository) DeleteActor(ctx context.Context, id int) errs.ErrorStr
 		errs.ServerError,
 		errors.New("something went wrong deleting actor"),
 	)
+
+	var exists bool
+	err := r.db.QueryRowContext(
+	ctx, 
+	`
+	SELECT EXISTS(
+	SELECT 1 
+	FROM movie_actors
+	WHERE actor_id = ?
+	)`, id).Scan(&exists)
+	if err != nil {
+	return errStruct
+	}
+	
+	if exists {	
+	errStruct := errs.NewErrorStruct(
+		errs.BadRequest,
+		errors.New("Cannot delete from actor since relationship exists"),
+	)
+	return errStruct
+	}	
 	
 	query := `DELETE FROM actors WHERE id = ?`
 
