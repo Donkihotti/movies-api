@@ -323,50 +323,30 @@ func (r *MovieRepository) PatchMovie(ctx context.Context, movie models.PatchMovi
 		errors.New("something went wrong updating movies"),
 	)
 
-	var patchedMovie models.Movie
-	res, err := r.db.ExecContext(
-		ctx,
-		`
-    UPDATE movies SET title = COALESCE(?, title), description = COALESCE(?, description), release_date = COALESCE(?, release_date), duration = COALESCE(?, duration) WHERE id = ?
-    `,
-		movie.Title,
-		movie.Description,
-		movie.ReleaseDate,
-		movie.Duration,
-		id,
-	)
+	patchedMovie := models.Movie{}
 
-	err = r.db.QueryRow(
-	`
-	SELECT title, description, release_date, duration 
-	FROM movies 
-	WHERE id = ?`,
-	id,
-	).Scan(
-	&patchedMovie.Title, 
-	&patchedMovie.Description, 
-	&patchedMovie.ReleaseDate, 
-	&patchedMovie.Duration, 
-	)
+	query := `UPDATE movies SET title = COALESCE(?, title),
+			  description = COALESCE(?, description),
+			  release_date = COALESCE(?, release_date),
+			  duration = COALESCE(?, duration) WHERE id = ?
+			  RETURNING id, title, description, release_date, duration`
 
+	row := r.db.QueryRowContext(ctx, query, movie.Title, movie.Description, movie.ReleaseDate, movie.Duration, id)
+	err := row.Scan(&patchedMovie.ID,
+					&patchedMovie.Title,
+					&patchedMovie.Description,
+					&patchedMovie.ReleaseDate,
+					&patchedMovie.Duration)
 	if err != nil {
 		log.Println(err)
-		return models.Movie{}, errStruct 
+		if errors.Is(err, sql.ErrNoRows) {
+			errStruct.ErrType = errs.NotFound
+			errStruct.ErrMsg = fmt.Errorf("Movie not found with id: %v", id)
+			return models.Movie{}, errStruct
+		}
+		return models.Movie{}, errStruct
 	}
-
-	rows, err := res.RowsAffected()
-	if err != nil {
-		log.Println(err)
-		return models.Movie{}, errStruct 
-	}
-
-	if rows == 0 {
-		log.Println(err)
-		errStruct.ErrType = errs.NotFound
-		errStruct.ErrMsg = fmt.Errorf("could not update movie with id: %v", id) 
-		return models.Movie{}, errStruct 
-	}
-	return patchedMovie, errs.ErrorStruct{} 
+	return patchedMovie, errs.ErrorStruct{}
 }
 
 
