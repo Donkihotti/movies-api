@@ -18,7 +18,7 @@ type MovieHandler struct {
 	Service *service.MovieService
 }
 
-func (h *MovieHandler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
+func (h *MovieHandler) GetMovies(w http.ResponseWriter, r *http.Request) {
 
 	if strings.HasSuffix(r.RequestURI, "?") {
     errStruct := errs.NewErrorStruct(
@@ -82,7 +82,7 @@ func (h *MovieHandler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(movies)
 }
 
-func (h *MovieHandler) MovieHandler(w http.ResponseWriter, r *http.Request) {
+func (h *MovieHandler) GetMovieByID(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)
@@ -108,7 +108,7 @@ func (h *MovieHandler) MovieHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(movie)
 }
 
-func (h *MovieHandler) CreateMovie(w http.ResponseWriter, r *http.Request) {
+func (h *MovieHandler) PostMovie(w http.ResponseWriter, r *http.Request) {
 
 	var req models.Movie
 	decoder := json.NewDecoder(r.Body)

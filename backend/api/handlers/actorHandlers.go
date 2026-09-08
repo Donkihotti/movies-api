@@ -33,7 +33,7 @@ func (h *ActorHandler) GetActors(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(actors)
 }
 
-func (h *ActorHandler) GetActor(w http.ResponseWriter, r *http.Request) {
+func (h *ActorHandler) GetActorByID(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)

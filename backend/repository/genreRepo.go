@@ -54,7 +54,7 @@ func (r *GenreRepository) GetGenres(ctx context.Context) ([]models.Genre, errs.E
 }
 
 
-func (r *GenreRepository) GetGenre(ctx context.Context, id int) (models.Genre, errs.ErrorStruct) {
+func (r *GenreRepository) GetGenreByID(ctx context.Context, id int) (models.Genre, errs.ErrorStruct) {
 
 	var genre models.Genre
 	query := `SELECT id, name FROM genres WHERE id = ?`

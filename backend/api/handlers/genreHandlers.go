@@ -17,7 +17,7 @@ type GenreHandler struct {
 	Service *service.GenreService
 }
 
-func (h *GenreHandler) GenresHandler(w http.ResponseWriter, r *http.Request) {
+func (h *GenreHandler) GetGenres(w http.ResponseWriter, r *http.Request) {
 
 	genre, errStruct := h.Service.GetGenres(r.Context())
 	if errStruct.ErrType != nil {
@@ -30,7 +30,7 @@ func (h *GenreHandler) GenresHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(genre)
 }
 
-func (h *GenreHandler) GenreHandler(w http.ResponseWriter, r *http.Request) {
+func (h *GenreHandler) GetGenreByID(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)
@@ -44,7 +44,7 @@ func (h *GenreHandler) GenreHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	genre, errStruct := h.Service.GetGenre(r.Context(), id)
+	genre, errStruct := h.Service.GetGenreByID(r.Context(), id)
 	if errStruct.ErrType != nil {
 		log.Println(errStruct.Error())
 		WriteErrorStatus(w, errStruct)

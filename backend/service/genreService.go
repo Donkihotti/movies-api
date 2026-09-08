@@ -30,9 +30,9 @@ func (s *GenreService) GetGenres(ctx context.Context) ([]models.Genre, errs.Erro
 	return genres, errs.ErrorStruct{}
 }
 
-func (s *GenreService) GetGenre(ctx context.Context, id int) (models.Genre, errs.ErrorStruct) {
+func (s *GenreService) GetGenreByID(ctx context.Context, id int) (models.Genre, errs.ErrorStruct) {
 
-	genre, errStruct := s.repo.GetGenre(ctx, id)
+	genre, errStruct := s.repo.GetGenreByID(ctx, id)
 	if errStruct.ErrType != nil {
 		return models.Genre{}, errStruct
 	}
