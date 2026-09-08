@@ -5,13 +5,11 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"fmt"
 	"slices"
 )
 
 func RunMigrations(db *sql.DB, populateDb bool) error {
-	cwd, _ := os.Getwd()
-	fmt.Println(cwd)
+
 	files, err := filepath.Glob("migrations/*.sql")
 	if err != nil {
 		return err

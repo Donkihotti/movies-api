@@ -25,7 +25,7 @@ type PatchMovieReq struct {
 	Description *string `json:"description"`
 	ReleaseDate *string `json:"release_date"`
 	Duration    *string `json:"duration"`
-	Genres      []Genre `json:"genres"`
+	Genres      []int   `json:"genres"`
 	Actors      []int   `json:"actors"`
 }
 

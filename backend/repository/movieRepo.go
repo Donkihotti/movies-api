@@ -323,20 +323,34 @@ func (r *MovieRepository) PatchMovie(ctx context.Context, movie models.PatchMovi
 		errors.New("something went wrong updating movies"),
 	)
 
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+	return models.Movie{}, errStruct
+	}
+
+	defer tx.Rollback()
+
 	patchedMovie := models.Movie{}
 
 	query := `UPDATE movies SET title = COALESCE(?, title),
 			  description = COALESCE(?, description),
 			  release_date = COALESCE(?, release_date),
-			  duration = COALESCE(?, duration) WHERE id = ?
+			  duration = COALESCE(?, duration)
+			  WHERE id = ?
 			  RETURNING id, title, description, release_date, duration`
 
-	row := r.db.QueryRowContext(ctx, query, movie.Title, movie.Description, movie.ReleaseDate, movie.Duration, id)
-	err := row.Scan(&patchedMovie.ID,
+	row := tx.QueryRowContext(ctx, query, 
+				movie.Title, 
+				movie.Description, 
+				movie.ReleaseDate, 
+				movie.Duration, id)
+
+	err = row.Scan(&patchedMovie.ID,
 					&patchedMovie.Title,
 					&patchedMovie.Description,
 					&patchedMovie.ReleaseDate,
-					&patchedMovie.Duration)
+					&patchedMovie.Duration,
+					)
 	if err != nil {
 		log.Println(err)
 		if errors.Is(err, sql.ErrNoRows) {
@@ -346,6 +360,126 @@ func (r *MovieRepository) PatchMovie(ctx context.Context, movie models.PatchMovi
 		}
 		return models.Movie{}, errStruct
 	}
+
+	if len(movie.Actors) > 0 {
+		
+		_, err := tx.ExecContext(
+		ctx,
+		`DELETE from movie_actors WHERE movie_id = ?`,
+		id)
+		if err != nil {
+		return models.Movie{}, errStruct
+		}
+
+		for _, actorId:= range movie.Actors {
+	
+		_, err := tx.ExecContext(
+		ctx, 
+		`INSERT INTO movie_actors (movie_id, actor_id) 
+		VALUES (?,?)
+		`, 
+		id, actorId)
+		if err != nil {
+		errStruct := errs.ErrorStruct{
+		errs.BadRequest,
+		errors.New("actor id doesn't exist in database"),
+		}
+		return models.Movie{}, errStruct
+		}
+		}
+	}
+
+	rows, err := tx.QueryContext(
+	ctx, 
+	`
+	SELECT a.id
+	FROM actors a
+	JOIN movie_actors mg ON mg.actor_id = a.id
+	WHERE mg.movie_id = ? 
+	`, id)
+
+	if err != nil {
+	return models.Movie{}, errStruct
+	}
+
+	for rows.Next() {
+	var actorId int
+	
+	err := rows.Scan(
+	&actorId,
+	) 
+	if err != nil {
+	return models.Movie{}, errStruct
+	}
+	patchedMovie.Actors = append(patchedMovie.Actors, actorId)
+	}
+
+	if err := rows.Err(); err != nil {
+		return models.Movie{}, errStruct
+	}
+
+	if len(movie.Genres) > 0 {
+		
+		_, err := tx.ExecContext(
+		ctx,
+		`DELETE from movie_genres WHERE movie_id = ?`,
+		id)
+		if err != nil {
+		return models.Movie{}, errStruct
+		}
+
+		for _, genreId := range movie.Genres {
+	
+		_, err := tx.ExecContext(
+		ctx, 
+		`INSERT INTO movie_genres (movie_id, genre_id) 
+		VALUES (?,?)
+		`, 
+		id, genreId)
+		if err != nil {
+		errStruct := errs.ErrorStruct{
+		errs.BadRequest,
+		errors.New("genre id doesn't exist in database"),
+		}
+		return models.Movie{}, errStruct
+		}
+		}
+	}
+
+	rows, err = tx.QueryContext(
+	ctx, 
+	`
+	SELECT g.id
+	FROM genres g
+	JOIN movie_genres mg ON mg.genre_id = g.id
+	WHERE mg.movie_id = ? 
+	`, id)
+
+	if err != nil {
+	return models.Movie{}, errStruct
+	}
+
+	for rows.Next() {
+	var genreId int
+	
+	err := rows.Scan(
+	&genreId,
+	) 
+	if err != nil {
+	return models.Movie{}, errStruct
+	}
+	patchedMovie.Genres = append(patchedMovie.Genres, genreId)
+	}
+
+	if err := rows.Err(); err != nil {
+		return models.Movie{}, errStruct
+	}
+
+	err = tx.Commit() 
+	if err != nil {
+		return models.Movie{}, errStruct
+	}
+
 	return patchedMovie, errs.ErrorStruct{}
 }
 
