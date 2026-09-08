@@ -202,47 +202,18 @@ func (r *GenreRepository) PatchGenre(ctx context.Context, newGenre models.Genre,
 		errors.New("something went wrong updating a genre"),
 	)
 
-	res, err := r.db.ExecContext(
-		ctx,
-		`UPDATE genres SET name = ? WHERE id = ?`,
-		newGenre.Genre,
-		id,
-	)
+	patchedGenre := models.Genre{}
 	
+	query := "UPDATE genres SET name = ? WHERE id = ? RETURNING id, name"
+	err := r.db.QueryRowContext(ctx, query, newGenre.Genre, id).Scan(&patchedGenre.ID, &patchedGenre.Genre)
 	if err != nil {
 		log.Println(err)
-		return models.Genre{}, errStruct 
-	}
-
-	var patchedGenre models.Genre
-
-	err = r.db.QueryRow(
-	`SELECT name
-	FROM genres 
-	WHERE id = ?`,
-	id,
-	).Scan(
-	&patchedGenre.Genre,
-	)
-
-	if err != nil {
-	return models.Genre{}, errStruct 
-	}
-
-	rows, err := res.RowsAffected()
-	if err != nil {
-		log.Println(err)
-		return models.Genre{}, errStruct 
-	}
-
-	if rows == 0 {
-		errStruct = errs.NewErrorStruct(
-			errs.NotFound,
-			fmt.Errorf("genre not found with id: %v", id), 
-		)
+		if errors.Is(err, sql.ErrNoRows) {
+			errStruct.ErrType = errs.NotFound
+			errStruct.ErrMsg = fmt.Errorf("Genre does not exist with id %v", id)
+			return models.Genre{}, errStruct
+		}
 		return models.Genre{}, errStruct
 	}
-
-
 	return patchedGenre, errs.ErrorStruct{}
 }
