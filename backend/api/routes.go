@@ -26,12 +26,12 @@ func NewRouter(
 	mux.HandleFunc("PATCH /api/genres/{id}", genreHandler.PatchGenre)
 
 	mux.HandleFunc("POST /api/actors", actorHandler.PostActor)
-	mux.HandleFunc("GET /api/actors", actorHandler.GetActorsHandler)
-	mux.HandleFunc("GET /api/actors/name/{name}", actorHandler.GetActorsByNameHandler)
-	mux.HandleFunc("GET /api/actors/birtactorHandlerdate/{birthdate}", actorHandler.GetActorsByBirthdateHandler)
-	mux.HandleFunc("GET /api/actors/{id}", actorHandler.GetActorHandler)
-	mux.HandleFunc("DELETE /api/actors/{id}", actorHandler.DeleteActorHandler)
-	mux.HandleFunc("PATCH /api/actors/{id}", actorHandler.PatchActorHandler)
+	mux.HandleFunc("GET /api/actors", actorHandler.GetActors)
+	mux.HandleFunc("GET /api/actors/name/{name}", actorHandler.GetActorsByName)
+	mux.HandleFunc("GET /api/actors/birthdate/{birthdate}", actorHandler.GetActorsByBirthdate)
+	mux.HandleFunc("GET /api/actors/{id}", actorHandler.GetActor)
+	mux.HandleFunc("DELETE /api/actors/{id}", actorHandler.DeleteActor)
+	mux.HandleFunc("PATCH /api/actors/{id}", actorHandler.PatchActor)
 
 	return mux
 }

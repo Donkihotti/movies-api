@@ -17,7 +17,7 @@ type ActorHandler struct {
 	Service *service.ActorService
 }
 
-func (h *ActorHandler) GetActorsHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ActorHandler) GetActors(w http.ResponseWriter, r *http.Request) {
 
 	name := r.URL.Query().Get("name")
 
@@ -33,7 +33,7 @@ func (h *ActorHandler) GetActorsHandler(w http.ResponseWriter, r *http.Request) 
 	json.NewEncoder(w).Encode(actors)
 }
 
-func (h *ActorHandler) GetActorHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ActorHandler) GetActor(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)
@@ -58,7 +58,7 @@ func (h *ActorHandler) GetActorHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(actor)
 }
 
-func (h *ActorHandler) GetActorsByNameHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ActorHandler) GetActorsByName(w http.ResponseWriter, r *http.Request) {
 
 	name := r.PathValue("name")
 	ctx := r.Context()
@@ -75,7 +75,7 @@ func (h *ActorHandler) GetActorsByNameHandler(w http.ResponseWriter, r *http.Req
 	json.NewEncoder(w).Encode(actors)
 }
 
-func (h *ActorHandler) GetActorsByBirthdateHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ActorHandler) GetActorsByBirthdate(w http.ResponseWriter, r *http.Request) {
 
 	date := r.PathValue("birthdate")
 	ctx := r.Context()
@@ -118,7 +118,7 @@ func (h *ActorHandler) PostActor(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(actor)
 }
 
-func (h *ActorHandler) DeleteActorHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ActorHandler) DeleteActor(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)
@@ -142,7 +142,7 @@ func (h *ActorHandler) DeleteActorHandler(w http.ResponseWriter, r *http.Request
 	WriteStatus(w, r.Method)
 }
 
-func (h *ActorHandler) PatchActorHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ActorHandler) PatchActor(w http.ResponseWriter, r *http.Request) {
 
 	idString := r.PathValue("id")
 	id, err := strconv.Atoi(idString)

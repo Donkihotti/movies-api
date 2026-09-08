@@ -4,11 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
-	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"log"
 	"strings"
 	"fmt"
+	
+	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
+	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 )
 
 type MovieRepository struct {

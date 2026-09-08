@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"time"
+
 	"gitea.kood.tech/timdanielfiander/movies-api.git/errs"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/models"
 	"gitea.kood.tech/timdanielfiander/movies-api.git/repository"
-	"log"
-	"time"
 )
 
 type ActorService struct {

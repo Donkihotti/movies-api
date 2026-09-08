@@ -33,7 +33,7 @@ func (h *MovieHandler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 
 	for key := range q {
 	switch key {
-	case "genre", "actor", "releaseYear":
+	case "genre", "actor", "year":
 	default: 
     errStruct := errs.NewErrorStruct(
         errs.BadRequest,
@@ -48,7 +48,7 @@ func (h *MovieHandler) MoviesHandler(w http.ResponseWriter, r *http.Request) {
 	filters := models.MovieFilters{}
 	actorid := q.Get("actor")
 
-	releaseYear := q.Get("releaseYear")
+	releaseYear := q.Get("year")
 	if genreValues, exists := q["genre"]; exists {
 		if len(genreValues) == 0 || genreValues[0] == "" {
 		errStruct := errs.ErrorStruct{
